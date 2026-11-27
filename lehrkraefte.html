@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b4a5c">
+  <title>StadtSpiel – Hinweise für Lehrkräfte</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"><div class="sun"></div></div>
+  <div class="app teacher">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="15" fill="#0b4a5c" stroke="#f2c35a" stroke-width="1.5"/>
+          <path d="M16 6v20M8.5 16h15" stroke="#f2c35a" stroke-width="1.4"/>
+          <path d="M16 7.2l3.2 8.8H12.8L16 7.2z" fill="#fff6ea"/>
+          <circle cx="16" cy="16" r="2.1" fill="#f2c35a"/>
+        </svg>
+        <div>
+          <strong>StadtSpiel</strong>
+          <span>Für Lehrkräfte</span>
+        </div>
+      </div>
+    </header>
+    <main>
+      <div class="card">
+        <p class="kicker">Unterrichtsmaterial</p>
+        <h1>Stadtplanung in Neustadt in Holstein</h1>
+        <p class="lead">Ein Serious Game für Politik, Geografie, Wirtschaft oder Projektwochen. Die Inhalte sind vereinfacht und ersetzen keine amtliche Planung.</p>
+        <p><a href="index.html">Zum Spiel</a></p>
+      </div>
+      <div class="card">
+        <h2>Lernziele</h2>
+        <ul>
+          <li>Zielkonflikte der Stadtplanung erkennen (Wohnen, Klima, Wirtschaft, Haushalt).</li>
+          <li>Lokale Themen von Neustadt in Holstein einordnen, etwa Hafenwestseite, Wärmeplanung, Gestaltungssatzung, Ferienwohnungen und Hochwasserschutz.</li>
+          <li>Interessen unterschiedlicher Gruppen abwägen (z. B. Jugendliche, Betriebe, ältere Einwohner).</li>
+          <li>Fachbegriffe wie Gestaltungssatzung, Wärmenetz, Bebauungsplan und Nachverdichtung erläutern können.</li>
+          <li>Eigene Entscheidungen begründen und in der Auswertung reflektieren.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Ablauf (45 Minuten)</h2>
+        <ol>
+          <li>Einstieg (5 Min.): Lage von Neustadt, Karte betrachten, Frage: „Was braucht eine Stadt am Meer?“</li>
+          <li>Spielen (25 Min.): Schwierigkeit „Standard“, einzeln oder zu zweit. Spielstand wird automatisch gespeichert.</li>
+          <li>Auswertung (15 Min.): Note, Zielkonflikte und die drei Reflexionsfragen im Endscreen. Optional Zusammenfassung drucken.</li>
+        </ol>
+        <h2>Ablauf (90 Minuten)</h2>
+        <ol>
+          <li>Längerer Einstieg mit zwei, drei Begriffen aus dem Lexikon.</li>
+          <li>Ein Durchlauf, danach zweiter Durchlauf mit anderer Schwierigkeit oder bewusster Gegenstrategie.</li>
+          <li>Vergleich der Endkarten: Wer hat das Klimaziel 2035 im Blick behalten? Wer die Kasse? Wer das Wohnen?</li>
+          <li>Diskussion: Welche Entscheidung wäre in der realen Stadt besonders umstritten?</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2>Hinweise zur Auswertung</h2>
+        <ul>
+          <li>Die Endnote ist nicht nur der Durchschnitt: Ungleichgewicht und sehr niedrige Einzelwerte senken das Ergebnis. Eine einseitige Stadt kann also schlechter abschneiden als eine ausgewogene.</li>
+          <li>Ereignisse (z. B. Sturmflut, Hitzesommer, Fördergeld) sind zufällig, hängen aber oft von früheren Entscheidungen ab.</li>
+          <li>Es gibt kein einzig richtiges Spiel. Unterschiedliche Wege sollen im Unterricht sichtbar werden.</li>
+          <li>Personenstimmen sind typisierte Perspektiven, keine echten Zitate.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Technik</h2>
+        <p class="body-text">Das Spiel läuft als statische Website im Browser, auch auf dem Handy. Ein Internetanschluss ist nur für die Schriftarten nötig, die Darstellung funktioniert auch ohne. Der Spielstand liegt lokal im Browser (localStorage). Optional kann die Seite als PWA gespeichert werden.</p>
+        <p class="footnote">Stand der inhaltlichen Grundlage: 2026. Quellenanregung: Angaben der Stadt Neustadt in Holstein, Landesinformationen zur Hafenwestseite und zur Wärmeplanung. Immer vereinfacht für den Unterricht.</p>
+        <p><a href="index.html">Zurück zum Spiel</a></p>
+      </div>
+    </main>
+    <footer class="site-footer">
+      Open-Source-Prototyp · <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "StadtSpiel – Neustadt in Holstein",
+  "short_name": "StadtSpiel",
+  "lang": "de",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b4a5c",
+  "theme_color": "#0b4a5c",
+  "description": "Serious Game zur Stadtplanung in Neustadt in Holstein.",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
