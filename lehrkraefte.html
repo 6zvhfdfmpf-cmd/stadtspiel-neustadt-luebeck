@@ -35,6 +35,35 @@
         <p class="lead">Ein Serious Game für Politik, Geografie, Wirtschaft oder Projektwochen. Die Inhalte sind vereinfacht und ersetzen keine amtliche Planung.</p>
         <p><a href="index.html">Zum Spiel</a></p>
       </div>
+
+      <div class="card" id="klassenmodus">
+        <h2>Klassenmodus</h2>
+        <p class="body-text">Erzeuge einen kurzen Code und gib ihn der Klasse. Wer denselben Code eingibt, erlebt dieselben Zufallsereignisse. Am Ende fügst du die Ergebniscodes (oder QR-Inhalte) hier ein – der Vergleich bleibt auf diesem Gerät, ohne Server.</p>
+        <div class="actions">
+          <button class="btn btn-gold" type="button" id="btn-make-code">Klassencode erzeugen</button>
+        </div>
+        <p class="code-preview" id="class-code-out">–</p>
+        <div class="qr-wrap" id="class-qr" hidden></div>
+        <p class="hint" id="class-code-help">Der Code gilt für eine gemeinsame Runde. Schwierigkeit wählen die Schüler:innen selbst.</p>
+
+        <label class="class-field" for="result-paste">Ergebniscodes der Klasse</label>
+        <textarea class="code-input" id="result-paste" placeholder="Einen Code je Zeile, z. B.&#10;R-AB3DQ-GHJKM2N" spellcheck="false"></textarea>
+        <div class="actions">
+          <button class="btn" type="button" id="btn-compare">Klasse vergleichen</button>
+        </div>
+        <p class="class-error" id="class-error" hidden></p>
+        <div id="class-summary" hidden>
+          <p class="lead" id="class-count"></p>
+          <svg class="chart" id="class-chart" viewBox="0 0 360 160" role="img" aria-label="Durchschnittswerte der Klasse"></svg>
+          <table class="class-table">
+            <thead>
+              <tr><th>Code</th><th>Punkte</th><th>Wohnen</th><th>Grün</th><th>Wirtschaft</th><th>Kasse</th></tr>
+            </thead>
+            <tbody id="class-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
       <div class="card">
         <h2>Lernziele</h2>
         <ul>
@@ -49,14 +78,14 @@
         <h2>Ablauf (45 Minuten)</h2>
         <ol>
           <li>Einstieg (5 Min.): Lage von Neustadt, Karte betrachten, Frage: „Was braucht eine Stadt am Meer?“</li>
-          <li>Spielen (25 Min.): Schwierigkeit „Standard“, einzeln oder zu zweit. Spielstand wird automatisch gespeichert.</li>
-          <li>Auswertung (15 Min.): Note, Zielkonflikte und die drei Reflexionsfragen im Endscreen. Optional Zusammenfassung drucken.</li>
+          <li>Spielen (25 Min.): Schwierigkeit „Standard“, einzeln oder zu zweit. Optional denselben Klassencode verteilen. Spielstand wird automatisch gespeichert.</li>
+          <li>Auswertung (15 Min.): Note, Zielkonflikte, Ergebniscodes vergleichen und die drei Reflexionsfragen. Optional Bild speichern oder Zusammenfassung drucken.</li>
         </ol>
         <h2>Ablauf (90 Minuten)</h2>
         <ol>
           <li>Längerer Einstieg mit zwei, drei Begriffen aus dem Lexikon.</li>
           <li>Ein Durchlauf, danach zweiter Durchlauf mit anderer Schwierigkeit oder bewusster Gegenstrategie.</li>
-          <li>Vergleich der Endkarten: Wer hat das Klimaziel 2035 im Blick behalten? Wer die Kasse? Wer das Wohnen?</li>
+          <li>Vergleich der Endkarten und Codes: Wer hat das Klimaziel 2035 im Blick behalten? Wer die Kasse? Wer das Wohnen?</li>
           <li>Diskussion: Welche Entscheidung wäre in der realen Stadt besonders umstritten?</li>
         </ol>
       </div>
@@ -64,14 +93,14 @@
         <h2>Hinweise zur Auswertung</h2>
         <ul>
           <li>Die Endnote ist nicht nur der Durchschnitt: Ungleichgewicht und sehr niedrige Einzelwerte senken das Ergebnis. Eine einseitige Stadt kann also schlechter abschneiden als eine ausgewogene.</li>
-          <li>Ereignisse (z. B. Sturmflut, Hitzesommer, Fördergeld) sind zufällig, hängen aber oft von früheren Entscheidungen ab.</li>
+          <li>Ereignisse (z. B. Sturmflut, Hitzesommer, Fördergeld) hängen von früheren Entscheidungen und – im Klassenmodus – vom gemeinsamen Code ab.</li>
           <li>Es gibt kein einzig richtiges Spiel. Unterschiedliche Wege sollen im Unterricht sichtbar werden.</li>
           <li>Personenstimmen sind typisierte Perspektiven, keine echten Zitate.</li>
         </ul>
       </div>
       <div class="card">
         <h2>Technik</h2>
-        <p class="body-text">Das Spiel läuft als statische Website im Browser, auch auf dem Handy. Ein Internetanschluss ist nur für die Schriftarten nötig, die Darstellung funktioniert auch ohne. Der Spielstand liegt lokal im Browser (localStorage). Optional kann die Seite als PWA gespeichert werden.</p>
+        <p class="body-text">Das Spiel läuft als statische Website im Browser, auch auf dem Handy. Ein Internetanschluss ist nur für die Schriftarten nötig, die Darstellung funktioniert auch ohne. Der Spielstand liegt lokal im Browser (localStorage). Klassencodes, QR-Codes und das Ergebnisbild entstehen ebenfalls nur auf dem Gerät. Optional kann die Seite als PWA gespeichert werden.</p>
         <p class="footnote">Stand der inhaltlichen Grundlage: 2026. Quellenanregung: Angaben der Stadt Neustadt in Holstein, Landesinformationen zur Hafenwestseite und zur Wärmeplanung. Immer vereinfacht für den Unterricht.</p>
         <p><a href="index.html">Zurück zum Spiel</a></p>
       </div>
@@ -80,5 +109,80 @@
       Open-Source-Prototyp · <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
     </footer>
   </div>
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/qr.js"></script>
+  <script>
+    (function () {
+      const $ = (id) => document.getElementById(id);
+      $("btn-make-code").addEventListener("click", function () {
+        const seed = StadtEngine.newSeed();
+        const code = StadtEngine.encodeClass(seed);
+        $("class-code-out").textContent = code;
+        $("class-qr").hidden = false;
+        $("class-qr").innerHTML = StadtQR.toSvg(code, { fg: "#062a38", bg: "#fff6ea" });
+      });
+      $("btn-compare").addEventListener("click", function () {
+        const raw = $("result-paste").value.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
+        const err = $("class-error");
+        const box = $("class-summary");
+        const rows = $("class-rows");
+        rows.innerHTML = "";
+        if (!raw.length) {
+          err.hidden = false;
+          err.textContent = "Füge mindestens einen Ergebniscode ein.";
+          box.hidden = true;
+          return;
+        }
+        const ok = [];
+        const bad = [];
+        raw.forEach((code) => {
+          const d = StadtEngine.decodeResult(code);
+          if (!d) { bad.push(code); return; }
+          const sim = StadtEngine.simulate(STADTSPIEL, d.seed, d.difficulty, d.choices);
+          ok.push({ code: code.toUpperCase(), difficulty: d.difficulty, sim: sim });
+        });
+        if (bad.length) {
+          err.hidden = false;
+          err.textContent = "Ungültig: " + bad.join(", ");
+        } else err.hidden = true;
+        if (!ok.length) { box.hidden = true; return; }
+        box.hidden = false;
+        const avg = (key) => Math.round(ok.reduce((a, r) => a + r.sim.stats[key], 0) / ok.length);
+        const avgScore = Math.round(ok.reduce((a, r) => a + r.sim.score, 0) / ok.length);
+        const avgBudget = Math.round(ok.reduce((a, r) => a + r.sim.budget, 0) / ok.length);
+        $("class-count").textContent = ok.length + " Auswertung" + (ok.length === 1 ? "" : "en") +
+          " · Schnitt " + avgScore + " Punkte · Kasse " + avgBudget;
+        const bars = [
+          { label: "Wohnen", v: avg("wohnen"), color: "#c46a3a" },
+          { label: "Grün & Klima", v: avg("gruen"), color: "#2a6b4d" },
+          { label: "Wirtschaft", v: avg("wirtschaft"), color: "#1b6f86" },
+          { label: "Punkte", v: avgScore, color: "#0b4a5c" }
+        ];
+        const svg = $("class-chart");
+        svg.innerHTML = "";
+        bars.forEach((b, i) => {
+          const y = 16 + i * 36;
+          const w = Math.max(4, Math.round((b.v / 100) * 220));
+          svg.insertAdjacentHTML("beforeend",
+            '<text x="0" y="' + (y + 12) + '" font-size="11" fill="#3b4f57" font-family="Nunito Sans, sans-serif">' + b.label + "</text>" +
+            '<rect x="110" y="' + y + '" width="220" height="16" rx="8" fill="rgba(11,74,92,0.12)"/>' +
+            '<rect x="110" y="' + y + '" width="' + w + '" height="16" rx="8" fill="' + b.color + '"/>' +
+            '<text x="338" y="' + (y + 13) + '" font-size="12" text-anchor="end" fill="#142228" font-weight="700">' + b.v + "</text>"
+          );
+        });
+        ok.sort((a, b) => b.sim.score - a.sim.score);
+        ok.forEach((r) => {
+          const tr = document.createElement("tr");
+          [r.code, r.sim.score, r.sim.stats.wohnen, r.sim.stats.gruen, r.sim.stats.wirtschaft, r.sim.budget].forEach((v) => {
+            const td = document.createElement("td");
+            td.textContent = v;
+            tr.appendChild(td);
+          });
+          rows.appendChild(tr);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
