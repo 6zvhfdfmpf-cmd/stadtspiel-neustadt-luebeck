@@ -19,7 +19,7 @@ window.StadtEngine = (function () {
     return Math.max(min, Math.min(max, Math.round(v)));
   }
 
-  function computeScore(stats, budget) {
+  function scoreParts(stats, budget) {
     const vals = [stats.wohnen, stats.gruen, stats.wirtschaft];
     const avg = (vals[0] + vals[1] + vals[2]) / 3;
     const spread = Math.max(...vals) - Math.min(...vals);
@@ -29,8 +29,23 @@ window.StadtEngine = (function () {
       if (v < 35) crisisPenalty += (35 - v) * 0.65;
       if (v < 20) crisisPenalty += (20 - v) * 0.5;
     }
-    if (budget < 0) crisisPenalty += Math.min(18, Math.abs(budget) * 0.3);
-    return clamp(avg - balancePenalty - crisisPenalty);
+    const budgetPenalty = budget < 0 ? Math.min(18, Math.abs(budget) * 0.3) : 0;
+    const budgetBonus = budget > 0 ? Math.min(8, budget * 0.08) : 0;
+    const raw = avg - balancePenalty - crisisPenalty - budgetPenalty + budgetBonus;
+    return {
+      avg: avg,
+      spread: spread,
+      balancePenalty: balancePenalty,
+      crisisPenalty: crisisPenalty,
+      budgetPenalty: budgetPenalty,
+      budgetBonus: budgetBonus,
+      raw: raw,
+      total: clamp(raw)
+    };
+  }
+
+  function computeScore(stats, budget) {
+    return scoreParts(stats, budget).total;
   }
 
   function bandFor(score) {
@@ -128,6 +143,110 @@ window.StadtEngine = (function () {
     const choices = [];
     for (let i = 0; i < 13; i++) choices.push(fromBits(bits, 22 + i * 2, 2) % 3);
     return { seed, difficulty, choices };
+  }
+
+
+  function normalizeName(s) {
+    let t = String(s || "").trim();
+    t = t.replace(/ß/g, "ss").replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue");
+    t = t.replace(/Ä/g, "AE").replace(/Ö/g, "OE").replace(/Ü/g, "UE");
+    t = t.replace(/[^a-zA-Z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    return t.slice(0, 16).toUpperCase();
+  }
+
+  function normalizeKlasse(s) {
+    const t = String(s || "").toUpperCase().replace(/KLASSE/g, "").replace(/JG\.?/g, "").replace(/[\s./]/g, "");
+    const m = t.match(/^(\d{1,2})([A-Z])$/);
+    return m ? m[1] + m[2] : "";
+  }
+
+  function strCrc8(str) {
+    const bits = [];
+    for (let i = 0; i < str.length; i++) {
+      const c = str.charCodeAt(i) & 0xff;
+      for (let b = 7; b >= 0; b--) bits.push((c >> b) & 1);
+    }
+    return crc8(bits);
+  }
+
+  function encodeTicket(info) {
+    const name = normalizeName(info.name);
+    const klasse = normalizeKlasse(info.klasse);
+    const r = encodeResult(info.seed, info.difficulty, info.choices);
+    const score = clamp(info.score);
+    const att = Math.max(1, Math.min(9, info.attempt || 1));
+    const payload = [name, klasse, r, String(score).padStart(3, "0"), String(att)].join("/");
+    const crc = bitsToCode(toBits(strCrc8(payload), 8));
+    return "W/" + payload + "/" + crc;
+  }
+
+  function decodeTicket(code) {
+    const raw = String(code || "").trim().replace(/\s+/g, "");
+    if (!raw) return null;
+    if (/^R-/i.test(raw) || (!/^W\//i.test(raw) && raw.replace(/-/g, "").length <= 16)) {
+      const game = decodeResult(raw);
+      if (!game) return null;
+      return { official: false, name: "", klasse: "", attempt: 1, scoreClaim: null, game: game, ticket: raw.toUpperCase() };
+    }
+    const parts = raw.split("/");
+    if (parts.length !== 7 || parts[0].toUpperCase() !== "W") return null;
+    const name = normalizeName(parts[1]);
+    const klasse = normalizeKlasse(parts[2]);
+    const r = parts[3];
+    const scoreClaim = parseInt(parts[4], 10);
+    const attempt = parseInt(parts[5], 10);
+    const crc = parts[6].toUpperCase();
+    const payload = [name, klasse, r.toUpperCase(), String(scoreClaim).padStart(3, "0"), String(attempt)].join("/");
+    const expect = bitsToCode(toBits(strCrc8(payload), 8));
+    if (crc !== expect) return { error: "checksum", ticket: raw };
+    const game = decodeResult(r);
+    if (!game) return { error: "result", ticket: raw };
+    return {
+      official: true,
+      name: name,
+      klasse: klasse,
+      attempt: attempt,
+      scoreClaim: scoreClaim,
+      game: game,
+      ticket: "W/" + payload + "/" + expect
+    };
+  }
+
+  function verifyTicket(data, ticket) {
+    const dec = decodeTicket(ticket);
+    if (!dec || dec.error) return dec || { error: "format" };
+    const sim = simulate(data, dec.game.seed, dec.game.difficulty, dec.game.choices);
+    const parts = scoreParts(sim.stats, sim.budget);
+    sim.parts = parts;
+    const officialScore = parts.total;
+    if (dec.official && dec.scoreClaim !== officialScore) {
+      return { error: "score", ticket: dec.ticket, dec: dec, sim: sim, officialScore: officialScore };
+    }
+    return { ok: true, dec: dec, sim: sim, officialScore: officialScore, parts: parts };
+  }
+
+  function compareEntries(a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    if ((a.spread || 0) !== (b.spread || 0)) return (a.spread || 0) - (b.spread || 0);
+    if ((b.budget || 0) !== (a.budget || 0)) return (b.budget || 0) - (a.budget || 0);
+    const na = String(a.name || "");
+    const nb = String(b.name || "");
+    return na.localeCompare(nb, "de");
+  }
+
+  function rankEntries(rows, topN) {
+    const list = rows.slice().sort(compareEntries);
+    let lastKey = null, lastRank = 0;
+    list.forEach((row, i) => {
+      const key = [row.score, row.spread || 0, row.budget || 0].join("|");
+      if (key !== lastKey) {
+        lastRank = i + 1;
+        lastKey = key;
+      }
+      row.rank = lastRank;
+      row.advances = lastRank <= (topN || 3);
+    });
+    return list;
   }
 
   function applyDelta(st, key, n) {
@@ -228,7 +347,8 @@ window.StadtEngine = (function () {
         st.eventsLog.push({ id: ev.id, title: ev.title, note: fx.note, year: s.year, fx: fx });
       }
     });
-    st.score = computeScore(st.stats, st.budget);
+    st.parts = scoreParts(st.stats, st.budget);
+    st.score = st.parts.total;
     st.band = bandFor(st.score);
     return st;
   }
@@ -241,8 +361,10 @@ window.StadtEngine = (function () {
   ];
 
   return {
-    ABC, mulberry32, clamp, computeScore, bandFor,
+    ABC, mulberry32, clamp, scoreParts, computeScore, bandFor,
     encodeClass, decodeClass, encodeResult, decodeResult,
+    normalizeName, normalizeKlasse, encodeTicket, decodeTicket, verifyTicket,
+    compareEntries, rankEntries,
     applyDelta, resolveEventEffects, pickEvent, checkKlima, simulate,
     CHAPTERS,
     newSeed() {

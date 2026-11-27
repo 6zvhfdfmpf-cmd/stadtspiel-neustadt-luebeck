@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b4a5c">
-  <meta name="description" content="StadtSpiel: Stadtplanung in Neustadt in Holstein spielerisch begreifen. Serious Game für Schulen.">
-  <title>StadtSpiel – Neustadt in Holstein</title>
+  <meta name="description" content="StadtSpiel-Wettbewerb: Stadtplanung in Neustadt in Holstein für die Klassen 8 bis 10. Am PC spielen, Punkte vergleichen, die besten kommen weiter.">
+  <title>StadtSpiel-Wettbewerb – Neustadt in Holstein</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="favicon.svg">
@@ -310,22 +310,43 @@
 </svg>
           <p class="map-caption">Stilisierte, interaktive Karte · nicht maßstabsgetreu</p>
         </div>
-        <div class="card">
-          <p class="kicker">Serious Game zur Stadtplanung</p>
-          <h1>Du planst Neustadt in Holstein</h1>
+        <div class="card" id="start-card">
+          <p class="kicker">Wettbewerb · Klassen 8 bis 10</p>
+          <h1>Wer plant Neustadt am besten?</h1>
           <p class="lead">Rund 16.000 Menschen leben hier an der Lübecker Bucht – zwischen historischer Altstadt, Hafen und Ostsee.</p>
-          <p class="body-text">Von 2026 bis 2040 entscheidest du an Orten der Stadt. Jede Wahl verändert Karte, Kasse und die Werte Wohnen, Grün &amp; Klima und Wirtschaft.</p>
-          <p class="hint" style="margin-top:0.85rem;">Schwierigkeit</p>
-          <div class="diff-row" id="diff-buttons"></div>
-          <label class="class-field" for="class-code-input">Klassencode (optional)</label>
-          <input class="code-input" id="class-code-input" maxlength="10" placeholder="K-AB3DQ" autocomplete="off" spellcheck="false" aria-describedby="class-code-hint">
-          <p class="hint" id="class-code-hint">Optional: Derselbe Code, dieselben Ereignisse in der Klasse.</p>
+          <p class="body-text">In 13 Situationen von 2026 bis 2040 baust du deine Stadt. Am Ende gibt es Punkte für eine ausgewogene Planung und eine solide Kasse. Wer in deiner Klasse am besten abschneidet, kommt eine Runde weiter.</p>
+          <div class="start-grid">
+            <label class="class-field" for="player-name">Name</label>
+            <input class="code-input name-input" id="player-name" maxlength="24" placeholder="Vorname Nachname oder Spielname" autocomplete="name" spellcheck="false">
+            <label class="class-field" for="player-class">Klasse</label>
+            <input class="code-input name-input" id="player-class" maxlength="8" placeholder="z. B. 8a oder 10b" autocomplete="off" spellcheck="false">
+            <label class="class-field" for="class-code-input">Rundencode</label>
+            <input class="code-input" id="class-code-input" maxlength="10" placeholder="K-AB3DQ" autocomplete="off" spellcheck="false" aria-describedby="class-code-hint">
+          </div>
+          <p class="hint" id="class-code-hint">Den Code bekommst du von deiner Lehrkraft. Alle mit demselben Code erleben dieselben Ereignisse – so ist der Vergleich fair. Ohne Code ist es nur eine Übung und zählt nicht.</p>
+          <p class="hint" id="start-error" hidden></p>
+          <div id="diff-wrap">
+            <p class="hint" style="margin-top:0.85rem;">Schwierigkeit (nur in der Übung)</p>
+            <div class="diff-row" id="diff-buttons"></div>
+          </div>
+          <p class="hint" id="diff-locked" hidden>Im Wettbewerb spielen alle auf der Stufe „Standard“, damit die Punkte vergleichbar sind.</p>
+          <details class="formula-box">
+            <summary>Wie werden die Punkte berechnet?</summary>
+            <ol>
+              <li><strong>Grundwert:</strong> Durchschnitt aus Wohnen, Grün &amp; Klima und Wirtschaft.</li>
+              <li><strong>Abzug für Ungleichgewicht:</strong> Liegen bester und schwächster Wert mehr als 20 Punkte auseinander, gibt es Abzug: (Abstand − 20) × 0,45.</li>
+              <li><strong>Abzug für Krise:</strong> Jeder Bereich unter 35 kostet extra Punkte, unter 20 noch einmal.</li>
+              <li><strong>Kasse:</strong> Minus bei Schulden (höchstens 18 Punkte). Plus bei einem Polster (höchstens 8 Punkte, 0,08 je Kassenpunkt).</li>
+            </ol>
+            <p>Die Endpunktzahl liegt zwischen 0 und 100 und wird auf eine ganze Zahl gerundet. Die genaue Rechnung siehst du am Ende.</p>
+          </details>
+          <p class="hint key-hint">Am Computer: Maus oder Tasten 1, 2, 3 zum Wählen und Enter zum Bestätigen.</p>
           <div class="actions">
-            <button class="btn btn-gold" id="btn-start">Spiel starten</button>
+            <button class="btn btn-gold" id="btn-start">Runde starten</button>
             <button class="btn btn-ghost" id="btn-continue" hidden>Spielstand fortsetzen</button>
           </div>
           <div class="link-row">
-            <a href="lehrkraefte.html">Hinweise für Lehrkräfte</a>
+            <a href="lehrkraefte.html">Auswertung für Lehrkräfte</a>
           </div>
         </div>
       </section>
@@ -725,6 +746,7 @@
             <div class="feedback" id="feedback" role="status"></div>
             <div class="actions">
               <button class="btn" id="btn-action" disabled>Entscheidung treffen</button>
+              <p class="hint key-hint" id="key-hint">1, 2 oder 3 wählen · Enter bestätigt</p>
             </div>
           </div>
         </div>
@@ -733,9 +755,12 @@
       <section id="screen-result" class="screen">
         <div class="card result-hero">
           <p class="kicker" id="result-kicker">Auswertung</p>
-          <h2>Deine Stadtplanung · 2040</h2>
+          <h2>Dein Ergebnis · 2040</h2>
+          <p class="result-player" id="result-player"></p>
           <div class="score-seal" id="final-score" data-band="solide">0</div>
+          <p class="hint" id="result-points-label">Wettbewerbspunkte</p>
           <p class="result-text" id="result-text"></p>
+          <div class="score-breakdown" id="score-breakdown"></div>
           <p class="hint" id="result-budget"></p>
           <div class="stats result-stats">
             <div class="stat"><div class="stat-label">Wohnen</div><div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:0%"></div></div><div class="stat-value" data-stat="wohnen">0</div></div>
@@ -744,8 +769,8 @@
           </div>
           <p id="tradeoff" class="body-text" style="text-align:left"></p>
           <div class="share-box" id="share-box">
-            <h2 class="section-title">Ergebnis teilen</h2>
-            <p class="hint">Diesen Code kann deine Lehrkraft auf der Lehrkräfte-Seite einfügen. Er entsteht nur auf diesem Gerät, ohne Server.</p>
+            <h2 class="section-title">Dein Wertungs-Code</h2>
+            <p class="hint" id="share-hint">Gib diesen Code an deine Lehrkraft. Er enthält Name, Klasse, Punkte und eine Prüfziffer – wenn etwas vertippt oder geändert wird, erkennt das die Auswertung.</p>
             <p class="result-code" id="result-code"></p>
             <div class="qr-wrap" id="result-qr" aria-hidden="true"></div>
             <div class="actions">
@@ -756,6 +781,7 @@
           </div>
           <div class="actions">
             <button class="btn btn-gold" id="btn-restart">Nochmal spielen</button>
+            <p class="hint" id="restart-lock" hidden>Diese Wettbewerbsrunde ist auf diesem Rechner abgeschlossen. Ein zweiter Versuch zählt nicht.</p>
           </div>
           <h2 class="section-title">Auszeichnungen</h2>
           <ul class="achieve" id="achievement-list"></ul>
@@ -769,13 +795,13 @@
           <ul class="reflect" id="reflect-list"></ul>
           <h2 class="section-title">Deine letzten Ergebnisse</h2>
           <ul class="highscores" id="highscore-list"></ul>
-          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein. Ereignisse hängen von früheren Entscheidungen und – im Klassenmodus – vom gemeinsamen Code ab.</p>
+          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein. Im Wettbewerb erleben alle mit demselben Rundencode dieselben Ereignisse. Die offizielle Punktzahl berechnet die Auswertungsseite neu – nicht der abgedruckte Wert allein.</p>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      Open-Source-Prototyp für Schulen ·
+      Wettbewerb für die Klassen 8 bis 10 ·
       <a href="lehrkraefte.html">Lehrkräfte</a> ·
       <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
     </footer>

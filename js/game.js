@@ -4,7 +4,7 @@
   const DATA = window.STADTSPIEL;
   const AUDIO = window.StadtAudio;
   const ENGINE = window.StadtEngine;
-  const SAVE_KEY = "stadtspiel-save-v3";
+  const SAVE_KEY = "stadtspiel-save-v4";
   const SCORE_KEY = "stadtspiel-scores-v2";
   const TUTORIAL_KEY = "stadtspiel-tutorial-v3";
   const THEME_KEY = "stadtspiel-theme";
@@ -37,12 +37,40 @@
     seed: 0,
     classCode: "",
     choices: [],
-    rng: null
+    rng: null,
+    playerName: "",
+    playerDisplay: "",
+    playerKlasse: "",
+    official: false,
+    attempt: 1
   };
 
   const mapCam = { scale: 1, x: 0, y: 0 };
   const $ = (id) => document.getElementById(id);
   const playEl = () => $("screen-play");
+  function isDesktop() {
+    return window.matchMedia && window.matchMedia("(min-width: 1024px)").matches;
+  }
+  function lockKey(name, klasse, classCode) {
+    return "stadtspiel-lock-v4:" + (classCode || "") + ":" + (klasse || "") + ":" + (name || "");
+  }
+  function readLock(name, klasse, classCode) {
+    try { return JSON.parse(localStorage.getItem(lockKey(name, klasse, classCode)) || "null"); } catch (e) { return null; }
+  }
+  function writeLock(name, klasse, classCode, obj) {
+    try { localStorage.setItem(lockKey(name, klasse, classCode), JSON.stringify(obj)); } catch (e) {}
+  }
+  function showStartError(msg) {
+    const el = $("start-error");
+    if (!el) return;
+    el.hidden = !msg;
+    el.textContent = msg || "";
+  }
+  function syncOfficialUi() {
+    const has = !!(($("class-code-input") && $("class-code-input").value) || "").trim();
+    if ($("diff-wrap")) $("diff-wrap").hidden = has;
+    if ($("diff-locked")) $("diff-locked").hidden = !has;
+  }
 
   function clamp(v, min, max) { return ENGINE.clamp(v, min, max); }
   function computeScore(stats, budget) { return ENGINE.computeScore(stats, budget); }
@@ -253,8 +281,14 @@
   function enterMapPhase() {
     const play = playEl();
     play.classList.add("map-focus");
-    play.classList.remove("sheet-open", "map-expanded");
-    setMapAspect("xMidYMid meet");
+    play.classList.remove("map-expanded");
+    if (isDesktop()) {
+      play.classList.add("sheet-open");
+      setMapAspect("xMidYMid slice");
+    } else {
+      play.classList.remove("sheet-open");
+      setMapAspect("xMidYMid meet");
+    }
     hideEvent();
     hideVoice();
     clearDeltas();
@@ -309,7 +343,7 @@
       btn.className = "option";
       btn.dataset.index = String(i);
       const strong = document.createElement("strong");
-      strong.textContent = plainText(opt.label);
+      strong.textContent = (i + 1) + " · " + plainText(opt.label);
       const span = document.createElement("span");
       span.textContent = plainText(opt.desc || "");
       btn.appendChild(strong);
@@ -593,7 +627,38 @@
   }
 
   function resultCode() {
+    const score = computeScore(state.stats, state.budget);
+    if (state.official && state.playerName && state.playerKlasse) {
+      return ENGINE.encodeTicket({
+        name: state.playerDisplay || state.playerName,
+        klasse: state.playerKlasse,
+        seed: state.seed,
+        difficulty: state.difficulty,
+        choices: state.choices,
+        score: score,
+        attempt: state.attempt || 1
+      });
+    }
     return ENGINE.encodeResult(state.seed, state.difficulty, state.choices);
+  }
+
+  function renderBreakdown(parts) {
+    const box = $("score-breakdown");
+    if (!box || !parts) return;
+    const row = (label, v, cls) => "<tr" + (cls ? " class=\"" + cls + "\"" : "") + "><td>" + label + "</td><td>" + v + "</td></tr>";
+    const num = (n, sign) => {
+      const r = Math.round(n * 10) / 10;
+      const s = (r > 0 && sign) ? "+" + r : String(r);
+      return s.replace(".", ",");
+    };
+    box.innerHTML = "<table><tbody>" +
+      row("Grundwert (Durchschnitt der drei Bereiche)", num(parts.avg)) +
+      row("Abzug Ungleichgewicht (Abstand " + Math.round(parts.spread) + ")", "−" + num(parts.balancePenalty).replace("^−", "")) +
+      row("Abzug Krise (Werte unter 35 / 20)", "−" + num(parts.crisisPenalty)) +
+      row("Abzug leere Kasse", "−" + num(parts.budgetPenalty)) +
+      row("Bonus solide Kasse", "+" + num(parts.budgetBonus)) +
+      row("Wettbewerbspunkte", String(parts.total), "total") +
+      "</tbody></table>";
   }
 
   function fillShare(code) {
@@ -688,8 +753,39 @@
       li.textContent = row.score + " Punkte · " + diff + (when ? " · " + when : "");
       hs.appendChild(li);
     });
+    if (state.official) {
+      hs.hidden = true;
+      if (hs.previousElementSibling && hs.previousElementSibling.classList.contains("section-title")) {
+        hs.previousElementSibling.hidden = true;
+      }
+    }
 
     fillShare(resultCode());
+    renderBreakdown(ENGINE.scoreParts(state.stats, state.budget));
+    if ($("result-player")) {
+      const bits = [];
+      if (state.playerDisplay || state.playerName) bits.push(state.playerDisplay || state.playerName);
+      if (state.playerKlasse) bits.push("Klasse " + state.playerKlasse);
+      $("result-player").textContent = bits.join(" · ");
+    }
+    if ($("result-points-label")) $("result-points-label").textContent = "Wettbewerbspunkte (0–100)";
+    const official = !!state.official;
+    if ($("btn-restart")) $("btn-restart").hidden = official;
+    if ($("restart-lock")) $("restart-lock").hidden = !official;
+    if ($("share-hint")) {
+      $("share-hint").textContent = official
+        ? "Gib diesen Code an deine Lehrkraft. Er enthält Name, Klasse, Punkte und eine Prüfziffer – wenn etwas vertippt oder geändert wird, erkennt das die Auswertung."
+        : "Das war eine Übung ohne Rundencode. Der Code zählt nicht für den Wettbewerb.";
+    }
+    if (official) {
+      writeLock(state.playerName, state.playerKlasse, state.classCode, {
+        status: "done",
+        score: score,
+        ticket: $("result-code").textContent,
+        attempt: state.attempt || 1,
+        at: new Date().toISOString()
+      });
+    }
 
     if (band === "hoch") {
       AUDIO.good();
@@ -713,7 +809,12 @@
       selected: null,
       seed: state.seed,
       classCode: state.classCode,
-      choices: state.choices.slice()
+      choices: state.choices.slice(),
+      playerName: state.playerName,
+      playerDisplay: state.playerDisplay,
+      playerKlasse: state.playerKlasse,
+      official: state.official,
+      attempt: state.attempt
     };
   }
 
@@ -777,10 +878,10 @@
   }
 
   const TUTORIAL = [
-    { title: "Das ist deine Karte", text: "Neustadt liegt an der Ostsee: Hafen, Altstadt, Bahnhof und Pelzerhaken. Die Karte verändert sich mit deinen Entscheidungen – du kannst zoomen oder sie vergrößern.", spot: "map" },
-    { title: "Orte und Situationen", text: "Der leuchtende Punkt zeigt, wo es als Nächstes langgeht. Tippe ihn oder die Leiste darunter, um die Situation zu öffnen.", spot: "map" },
-    { title: "Erst wählen, dann sehen", text: "Drei Wege stehen zur Wahl. Was sie bewirken, siehst du erst, nachdem du dich entschieden hast – typisch für echte Zielkonflikte.", spot: "" },
-    { title: "Jahr, Kasse, Werte", text: "Oben bleiben Jahr, Stadtkasse und die drei Werte im Blick. Von 2026 bis 2040 planst du in vier Kapiteln.", spot: "hud" }
+    { title: "Das ist deine Karte", text: "Hier siehst du Neustadt an der Ostsee: Hafen, Altstadt, Bahnhof und Pelzerhaken. Am Computer liegt die Karte links. Sie verändert sich mit deinen Entscheidungen.", spot: "map" },
+    { title: "So triffst du Entscheidungen", text: "Jede Situation hat drei Wege. Klicke einen an oder drücke die Tasten 1, 2 oder 3. Mit Enter bestätigst du. Die Folgen siehst du erst danach.", spot: "" },
+    { title: "Fairer Wettbewerb", text: "Mit dem Rundencode erlebt die ganze Klasse dieselben Ereignisse. Jede Person spielt die Runde auf diesem Rechner nur einmal. Am Ende bekommst du einen Wertungs-Code für die Lehrkraft.", spot: "" },
+    { title: "Jahr, Kasse, Werte", text: "Jahr, Stadtkasse und die drei Werte bleiben im Blick. Die Punkte belohnen eine ausgewogene Stadt – nicht nur einen einzelnen Spitzenwert.", spot: "hud" }
   ];
 
   function tutorialDone() {
@@ -829,21 +930,51 @@
   }
 
   function startGame(diff) {
+    showStartError("");
     const raw = ($("class-code-input") && $("class-code-input").value || "").trim();
+    const nameRaw = ($("player-name") && $("player-name").value) || "";
+    const classRaw = ($("player-class") && $("player-class").value) || "";
     let seed;
+    let official = false;
     if (raw) {
       seed = ENGINE.decodeClass(raw);
       if (seed == null) {
         $("class-code-input").classList.add("is-invalid");
-        $("class-code-hint").textContent = "Dieser Klassencode ist ungültig. Prüfe die Zeichen oder starte ohne Code.";
+        showStartError("Dieser Rundencode ist ungültig. Bitte genau so übernehmen, wie ihn deine Lehrkraft angegeben hat.");
         return;
       }
       $("class-code-input").classList.remove("is-invalid");
+      const name = ENGINE.normalizeName(nameRaw);
+      const klasse = ENGINE.normalizeKlasse(classRaw);
+      if (!name) { showStartError("Bitte trag einen Namen ein."); return; }
+      if (!klasse) { showStartError("Bitte trag deine Klasse ein, zum Beispiel 8a oder 10b."); return; }
+      const code = ENGINE.encodeClass(seed);
+      const lock = readLock(name, klasse, code);
+      if (lock && lock.status === "done") {
+        showStartError("Du hast diese Runde auf diesem Rechner schon gespielt" + (lock.score != null ? " (" + lock.score + " Punkte)." : ".") + " Ein zweiter Versuch zählt nicht für den Wettbewerb.");
+        return;
+      }
+      if (lock && lock.status === "started" && hasSave()) {
+        continueGame();
+        return;
+      }
+      official = true;
+      diff = "standard";
+      state.playerName = name;
+      state.playerDisplay = nameRaw.trim();
+      state.playerKlasse = klasse;
+      state.official = true;
+      state.attempt = 1;
     } else {
       seed = ENGINE.newSeed();
+      state.playerName = ENGINE.normalizeName(nameRaw);
+      state.playerDisplay = nameRaw.trim();
+      state.playerKlasse = ENGINE.normalizeKlasse(classRaw);
+      state.official = false;
+      state.attempt = 1;
     }
     const cfg = DATA.difficulties[diff] || DATA.difficulties.standard;
-    state.difficulty = diff;
+    state.difficulty = official ? "standard" : diff;
     state.current = 0;
     state.stats = Object.assign({}, cfg.startStats);
     state.budget = cfg.budget;
@@ -858,6 +989,13 @@
     state.classCode = ENGINE.encodeClass(seed);
     state.choices = [];
     state.rng = ENGINE.mulberry32(seed >>> 0);
+    if (state.official) {
+      writeLock(state.playerName, state.playerKlasse, ENGINE.encodeClass(seed), {
+        status: "started",
+        attempt: state.attempt,
+        at: new Date().toISOString()
+      });
+    }
     resetCam();
     clearSave();
     showScreen("play");
@@ -1009,6 +1147,10 @@
 
     initDifficulty();
     initMapGestures();
+    syncOfficialUi();
+    if ($("class-code-input")) {
+      $("class-code-input").addEventListener("input", syncOfficialUi);
+    }
     $("btn-start").addEventListener("click", () => startGame(selectedDifficulty()));
     $("btn-continue").hidden = !hasSave();
     $("btn-continue").addEventListener("click", continueGame);
@@ -1051,14 +1193,42 @@
         stats: state.stats,
         budget: state.budget,
         choices: state.history,
-        code: $("result-code").textContent
+        code: $("result-code").textContent,
+        name: state.playerDisplay || state.playerName,
+        klasse: state.playerKlasse
       });
       try { await StadtExport.downloadCanvas(canvas, "stadtspiel-neustadt-2040.png"); }
       catch (e) { $("btn-export-png").textContent = "Speichern nicht möglich"; }
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && playEl().classList.contains("map-expanded")) toggleExpand(false);
+      if (e.key === "Escape" && playEl() && playEl().classList.contains("map-expanded")) {
+        toggleExpand(false);
+        return;
+      }
+      const tag = (e.target && e.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      const hidden = (id) => { const el = $(id); return !el || el.hidden; };
+      if (!hidden("tutorial")) return;
+      if (!hidden("glossary")) return;
+      if (!hidden("event-modal")) {
+        if (e.key === "Enter") { e.preventDefault(); goNext(); }
+        return;
+      }
+      if (!hidden("chapter-modal")) {
+        if (e.key === "Enter") { e.preventDefault(); $("btn-chapter-ok").click(); }
+        return;
+      }
+      if (!playEl() || !playEl().classList.contains("active") || !state.started) return;
+      if (e.key === "1" || e.key === "2" || e.key === "3") {
+        e.preventDefault();
+        if (!state.revealed) selectOption(Number(e.key) - 1);
+        return;
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onAction();
+      }
     });
 
     document.querySelectorAll("#stadt-map .map-pin").forEach((pin) => {
