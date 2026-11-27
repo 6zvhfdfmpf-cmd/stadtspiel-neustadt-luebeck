@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b4a5c">
+  <meta name="description" content="StadtSpiel: Stadtplanung in Neustadt in Holstein spielerisch begreifen. Serious Game für Schulen.">
   <title>StadtSpiel – Neustadt in Holstein</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -18,6 +21,7 @@
     <div class="gull"></div>
     <div class="gull"></div>
   </div>
+  <div id="confetti" hidden></div>
 
   <div class="app">
     <header class="topbar">
@@ -33,293 +37,643 @@
           <span>Neustadt in Holstein</span>
         </div>
       </div>
-      <div class="progress-meta" id="progress-meta" hidden>1 / 7</div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btn-sound" type="button" aria-pressed="false">Ton aus</button>
+        <button class="icon-btn" id="btn-glossary" type="button">Lexikon</button>
+      </div>
     </header>
 
     <main>
-      <!-- START -->
       <section id="screen-start" class="screen active">
         <div class="card map-wrap">
-          <h2>Karte von Neustadt</h2>
-          <svg class="map-svg" viewBox="0 0 360 300" role="img" aria-labelledby="map-title map-desc">
-            <title id="map-title">Stilisierte Karte von Neustadt in Holstein</title>
-            <desc id="map-desc">Ostsee im Osten, Hafen und Altstadt in der Mitte, Pelzerhaken im Süden. Nicht maßstabsgetreu.</desc>
-            <defs>
-              <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#7ec4d4"/>
-                <stop offset="1" stop-color="#1d6f86"/>
-              </linearGradient>
-              <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#f4e4bf"/>
-                <stop offset="1" stop-color="#e2c891"/>
-              </linearGradient>
-              <pattern id="waves" width="24" height="10" patternUnits="userSpaceOnUse">
-                <path d="M0 6 q6 -5 12 0 t12 0" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.2"/>
-              </pattern>
-            </defs>
-            <rect width="360" height="300" fill="url(#land)"/>
-            <!-- Ostsee / Bucht rechts -->
-            <path fill="url(#water)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
-            <path fill="url(#waves)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
-            <!-- Strandsaum -->
-            <path d="M206 0c18 40-2 70 0 94-4 32-49 42-52 70-2 26 26 36 26 58 2 32-16 50-38 78l10 0c20-26 36-44 34-76 0-22-28-34-26-58 3-28 48-40 52-70 2-22-14-50 2-96z" fill="#f0d7a2"/>
-            <!-- Hafenbecken -->
-            <path d="M168 96h78v54H168z" fill="#1d6f86"/>
-            <path d="M168 96h78v54H168z" fill="url(#waves)"/>
-            <rect x="166" y="94" width="8" height="58" fill="#8a6a45"/>
-            <rect x="240" y="94" width="8" height="40" fill="#8a6a45"/>
-            <rect x="168" y="92" width="80" height="6" fill="#6b5134"/>
-            <!-- Steg -->
-            <rect x="200" y="118" width="36" height="5" fill="#6b5134"/>
-            <circle cx="190" cy="115" r="3.2" fill="#c9a36a"/>
-            <circle cx="226" cy="108" r="3.2" fill="#c9a36a"/>
-            <!-- Boote im Hafen -->
-            <path d="M184 128 l14 0 3 5 -20 0z" fill="#9a3e32"/>
-            <path d="M208 132 l18 0 3 5 -24 0z" fill="#fff6ea" stroke="#0b4a5c" stroke-width="0.6"/>
-            <!-- Altstadt -->
-            <g transform="translate(86,86)">
-              <rect x="28" y="42" width="52" height="36" fill="#e8d3a4" stroke="#c4a06a" stroke-width="0.8" rx="2"/>
-              <!-- Markt -->
-              <rect x="38" y="52" width="28" height="16" fill="#f7ead3"/>
-              <!-- Häuser -->
-              <g fill="#9a3e32">
-                <path d="M30 58h10v12H30z"/>
-                <path d="M30 58l5-6 5 6z"/>
-                <path d="M68 56h10v14H68z"/>
-                <path d="M68 56l5-7 5 7z"/>
-                <path d="M54 48h8v10h-8z"/>
-                <path d="M54 48l4-5 4 5z"/>
-              </g>
-              <!-- Stadtkirche -->
-              <g transform="translate(42,8)">
-                <rect x="6" y="22" width="16" height="26" fill="#8a3a30"/>
-                <path d="M4 22h20l-10-10z" fill="#5c2a24"/>
-                <rect x="11" y="0" width="6" height="22" fill="#7a332b"/>
-                <path d="M10 0h8l-4-8z" fill="#2a1a16"/>
-                <rect x="12.2" y="6" width="3.6" height="5" fill="#f2c35a"/>
-              </g>
-              <!-- Rathaus andeutung -->
-              <rect x="36" y="40" width="14" height="10" fill="#cfc4a8"/>
-              <path d="M35 40h16l-8-5z" fill="#6d2b23"/>
-            </g>
-            <!-- Bahnhof -->
-            <g transform="translate(70,168)">
-              <rect x="0" y="10" width="36" height="14" fill="#d8c8a4" stroke="#8a6a45" stroke-width="0.7"/>
-              <rect x="4" y="4" width="28" height="8" fill="#9a3e32"/>
-              <rect x="-8" y="24" width="70" height="3" fill="#5b7179"/>
-              <rect x="-8" y="28" width="70" height="1.4" fill="#c4a06a"/>
-            </g>
-            <!-- Bäume -->
-            <g fill="#4e7a4a">
-              <circle cx="70" cy="120" r="7"/>
-              <circle cx="58" cy="132" r="5.5"/>
-              <circle cx="120" cy="200" r="7"/>
-              <circle cx="138" cy="188" r="6"/>
-              <circle cx="96" cy="210" r="5"/>
-              <circle cx="230" cy="200" r="6"/>
-            </g>
-            <g fill="#6d2b23">
-              <rect x="68" y="124" width="3" height="8"/>
-              <rect x="56.5" y="135" width="2.4" height="6"/>
-              <rect x="118.5" y="204" width="3" height="8"/>
-            </g>
-            <!-- Pelzerhaken Strand -->
-            <path d="M200 230c20 4 40 8 80 6 28-1 54 8 80 4v40H200z" fill="#f0d7a2"/>
-            <path d="M200 248c30 6 70 4 160 8v24H200z" fill="#7ec4d4"/>
-            <rect x="248" y="236" width="36" height="4" fill="#8a6a45"/>
-            <!-- kleine Strandkörbe -->
-            <rect x="260" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
-            <rect x="272" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
-            <!-- Labels -->
-            <g font-family="Nunito Sans, Segoe UI, sans-serif" font-size="11" font-weight="800" fill="#142228">
-              <text x="118" y="80">Altstadt</text>
-              <text x="184" y="88">Hafen</text>
-              <text x="64" y="198">Bahnhof</text>
-              <text x="236" y="222">Pelzerhaken</text>
-              <text x="268" y="42" fill="#073445">Ostsee</text>
-            </g>
-            <!-- Kompass -->
-            <g transform="translate(28,28)">
-              <circle r="16" fill="#fff6ea" stroke="#0b4a5c" stroke-width="1.4"/>
-              <path d="M0-11 L3 0 0 11 -3 0z" fill="#9a3e32"/>
-              <path d="M-11 0 L0 3 11 0 0-3z" fill="#0b4a5c"/>
-              <text y="-19" text-anchor="middle" font-size="8" font-weight="700" fill="#0b4a5c" font-family="Nunito Sans, sans-serif">N</text>
-            </g>
-          </svg>
-          <p class="map-caption">Stilisierte Orientierungskarte · nicht maßstabsgetreu</p>
+          <svg id="intro-map" class="map-svg" viewBox="0 0 360 300" role="img" aria-labelledby="map-title map-desc" data-weather="fair" data-year="2026">
+  <title id="intro-map-title">Interaktive Karte von Neustadt in Holstein</title>
+  <desc id="intro-map-desc">Ostsee im Osten, Hafen und Altstadt in der Mitte, Pelzerhaken im Süden. Marker zeigen Planungssituationen. Nicht maßstabsgetreu.</desc>
+  <defs>
+    <linearGradient id="intro-water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7ec4d4"/><stop offset="1" stop-color="#1d6f86"/>
+    </linearGradient>
+    <linearGradient id="intro-land" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4e4bf"/><stop offset="1" stop-color="#e2c891"/>
+    </linearGradient>
+    <pattern id="intro-waves" width="24" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 6 q6 -5 12 0 t12 0" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.2"/>
+    </pattern>
+    <linearGradient id="intro-dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a3350" stop-opacity="0.35"/><stop offset="1" stop-color="#0b1c28" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="300" fill="url(#intro-land)"/>
+  <path fill="url(#intro-water)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+  <path fill="url(#intro-waves)" class="wave" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+  <path d="M206 0c18 40-2 70 0 94-4 32-49 42-52 70-2 26 26 36 26 58 2 32-16 50-38 78l10 0c20-26 36-44 34-76 0-22-28-34-26-58 3-28 48-40 52-70 2-22-14-50 2-96z" fill="#f0d7a2"/>
+  <!-- Hafenbecken -->
+  <path d="M168 96h78v54H168z" fill="#1d6f86"/>
+  <path d="M168 96h78v54H168z" fill="url(#intro-waves)"/>
+  <rect x="166" y="94" width="8" height="58" fill="#8a6a45"/>
+  <rect x="240" y="94" width="8" height="40" fill="#8a6a45"/>
+  <rect x="168" y="92" width="80" height="6" fill="#6b5134"/>
+  <rect x="200" y="118" width="36" height="5" fill="#6b5134"/>
+  <g class="layer layer-hafen-green">
+    <rect x="172" y="98" width="70" height="12" fill="#6b8f4e"/>
+    <circle cx="180" cy="104" r="5" fill="#2f6b4f"/>
+    <circle cx="198" cy="103" r="6" fill="#4e7a4a"/>
+    <circle cx="220" cy="105" r="5.5" fill="#2f6b4f"/>
+    <path d="M176 128 l40 0 2 4 -44 0z" fill="#c9a36a"/>
+  </g>
+  <g class="layer layer-hafen-mix">
+    <rect x="174" y="100" width="14" height="16" fill="#cfc4a8"/>
+    <path d="M173 100h16l-8-6z" fill="#9a3e32"/>
+    <rect x="192" y="102" width="12" height="14" fill="#e8d3a4"/>
+    <path d="M191 102h14l-7-5z" fill="#0b4a5c"/>
+    <rect x="208" y="100" width="16" height="16" fill="#d8c8a4"/>
+    <path d="M207 100h18l-9-6z" fill="#9a3e32"/>
+  </g>
+  <g class="layer layer-hafen-industry">
+    <rect x="176" y="99" width="8" height="22" fill="#5b7179"/>
+    <rect x="188" y="106" width="18" height="12" fill="#3d4f57"/>
+    <rect x="214" y="100" width="6" height="24" fill="#6d2b23"/>
+    <path d="M184 132 l16 0 3 5 -22 0z" fill="#9a3e32"/>
+    <path d="M208 134 l18 0 3 5 -24 0z" fill="#fff6ea" stroke="#0b4a5c" stroke-width="0.6"/>
+  </g>
+  <g class="layer layer-heat-strong">
+    <path d="M160 150 q20 10 40 4 t50 6" fill="none" stroke="#c44b38" stroke-width="2.4" stroke-dasharray="4 3"/>
+    <circle cx="236" cy="118" r="7" fill="#c44b38" stroke="#fff6ea" stroke-width="1"/>
+  </g>
+  <g class="layer layer-heat-medium">
+    <circle cx="236" cy="118" r="7" fill="#e08a4d" stroke="#fff6ea" stroke-width="1"/>
+  </g>
+  <!-- Altstadt base -->
+  <g transform="translate(86,86)">
+    <rect x="28" y="42" width="52" height="36" fill="#e8d3a4" stroke="#c4a06a" stroke-width="0.8" rx="2"/>
+    <rect x="38" y="52" width="28" height="16" fill="#f7ead3"/>
+    <g fill="#9a3e32">
+      <path d="M30 58h10v12H30z"/><path d="M30 58l5-6 5 6z"/>
+      <path d="M68 56h10v14H68z"/><path d="M68 56l5-7 5 7z"/>
+      <path d="M54 48h8v10h-8z"/><path d="M54 48l4-5 4 5z"/>
+    </g>
+    <g transform="translate(42,8)">
+      <rect x="6" y="22" width="16" height="26" fill="#8a3a30"/>
+      <path d="M4 22h20l-10-10z" fill="#5c2a24"/>
+      <rect x="11" y="0" width="6" height="22" fill="#7a332b"/>
+      <path d="M10 0h8l-4-8z" fill="#2a1a16"/>
+      <rect x="12.2" y="6" width="3.6" height="5" fill="#f2c35a"/>
+    </g>
+    <rect x="36" y="40" width="14" height="10" fill="#cfc4a8"/>
+    <path d="M35 40h16l-8-5z" fill="#6d2b23"/>
+  </g>
+  <g class="layer layer-solar">
+    <rect x="116" y="140" width="9" height="5" fill="#1b3a6b" transform="rotate(-20 120 142)"/>
+    <rect x="154" y="138" width="9" height="5" fill="#1b3a6b" transform="rotate(-18 158 140)"/>
+    <rect x="132" y="128" width="8" height="4" fill="#1b3a6b" transform="rotate(-16 136 130)"/>
+  </g>
+  <g class="layer layer-modern">
+    <rect x="128" y="150" width="14" height="22" fill="#8aa4b0"/>
+    <rect x="130" y="153" width="4" height="5" fill="#eaf6fa"/>
+    <rect x="136" y="153" width="4" height="5" fill="#eaf6fa"/>
+  </g>
+  <g class="layer layer-infill">
+    <rect x="150" y="152" width="10" height="14" fill="#c46a3a"/>
+    <path d="M149 152h12l-6-5z" fill="#5c2a24"/>
+  </g>
+  <g class="layer layer-social">
+    <rect x="100" y="158" width="22" height="14" fill="#d8c8a4" stroke="#0b4a5c" stroke-width="0.7"/>
+    <rect x="104" y="162" width="5" height="5" fill="#2a1a16"/>
+    <rect x="112" y="162" width="5" height="5" fill="#2a1a16"/>
+  </g>
+  <g class="layer layer-market-busy">
+    <circle cx="138" cy="148" r="3" fill="#c44b38"/>
+    <circle cx="146" cy="150" r="2.5" fill="#f2c35a"/>
+    <circle cx="132" cy="152" r="2.5" fill="#2f6b4f"/>
+    <rect x="126" y="154" width="20" height="3" fill="#fff6ea"/>
+  </g>
+  <g class="layer layer-youth">
+    <rect x="108" y="168" width="16" height="10" fill="#2a8aa0"/>
+    <path d="M107 168h18l-9-6z" fill="#0b4a5c"/>
+    <circle cx="116" cy="176" r="2" fill="#f2c35a"/>
+  </g>
+  <g class="layer layer-holiday">
+    <rect x="158" y="160" width="8" height="8" fill="#fff6ea" stroke="#c46a3a" stroke-width="0.7"/>
+    <rect x="168" y="162" width="8" height="8" fill="#fff6ea" stroke="#c46a3a" stroke-width="0.7"/>
+  </g>
+  <!-- Bahnhof -->
+  <g transform="translate(70,168)">
+    <rect x="0" y="10" width="36" height="14" fill="#d8c8a4" stroke="#8a6a45" stroke-width="0.7"/>
+    <rect x="4" y="4" width="28" height="8" fill="#9a3e32"/>
+    <rect x="-8" y="24" width="70" height="3" fill="#5b7179"/>
+    <rect x="-8" y="28" width="70" height="1.4" fill="#c4a06a"/>
+  </g>
+  <g class="layer layer-rail">
+    <path d="M62 200 q40 18 80 8 t90 20" fill="none" stroke="#d9a441" stroke-width="2.2" stroke-dasharray="6 4"/>
+    <circle cx="88" cy="200" r="4" fill="#d9a441"/>
+  </g>
+  <g class="layer layer-bus">
+    <path d="M88 200 q30 -20 70 -10 t80 40" fill="none" stroke="#1b6f86" stroke-width="2" stroke-dasharray="5 4"/>
+  </g>
+  <g class="layer layer-walk">
+    <path d="M126 160 q30 20 40 40 t50 50" fill="none" stroke="#2f6b4f" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g class="layer layer-cars">
+    <rect x="150" y="170" width="7" height="4" rx="1" fill="#3d4f57"/>
+    <rect x="160" y="176" width="7" height="4" rx="1" fill="#9a3e32"/>
+    <rect x="148" y="182" width="7" height="4" rx="1" fill="#0b4a5c"/>
+  </g>
+  <!-- Trees base -->
+  <g fill="#4e7a4a">
+    <circle cx="70" cy="120" r="7"/><circle cx="58" cy="132" r="5.5"/>
+    <circle cx="120" cy="200" r="7"/><circle cx="138" cy="188" r="6"/>
+    <circle cx="96" cy="210" r="5"/><circle cx="230" cy="200" r="6"/>
+  </g>
+  <g class="layer layer-trees-mid">
+    <circle cx="80" cy="148" r="6" fill="#2f6b4f"/>
+    <circle cx="200" cy="188" r="6" fill="#4e7a4a"/>
+  </g>
+  <g class="layer layer-trees-high">
+    <circle cx="80" cy="148" r="7" fill="#2f6b4f"/>
+    <circle cx="52" cy="160" r="7" fill="#4e7a4a"/>
+    <circle cx="200" cy="188" r="7" fill="#2f6b4f"/>
+    <circle cx="214" cy="176" r="6" fill="#4e7a4a"/>
+    <circle cx="164" cy="200" r="6" fill="#2f6b4f"/>
+    <circle cx="100" cy="120" r="6" fill="#4e7a4a"/>
+  </g>
+  <!-- Pelzerhaken beach -->
+  <path d="M200 230c20 4 40 8 80 6 28-1 54 8 80 4v40H200z" fill="#f0d7a2"/>
+  <path d="M200 248c30 6 70 4 160 8v24H200z" fill="#7ec4d4"/>
+  <rect x="248" y="236" width="36" height="4" fill="#8a6a45"/>
+  <rect x="260" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  <rect x="272" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  <g class="layer layer-beach-busy">
+    <rect x="236" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="248" y="224" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="284" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="296" y="225" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  </g>
+  <g class="layer layer-beach-nature">
+    <path d="M220 232 q20 -10 40 -2 t50 -2" fill="#c4a06a"/>
+    <path d="M230 228 q16 -8 30 0" fill="#6b8f4e"/>
+  </g>
+  <g class="layer layer-wall">
+    <path d="M210 242 h140" stroke="#5b7179" stroke-width="5" stroke-linecap="round"/>
+    <path d="M210 239 h140" stroke="#fff6ea" stroke-width="1.2" opacity="0.5"/>
+  </g>
+  <g class="layer layer-dunes">
+    <path d="M214 236 q24 -14 50 -2 t60 -4 t40 2" fill="#e2c891"/>
+    <path d="M220 232 q20 -10 40 0 t50 -2" fill="#6b8f4e" opacity="0.85"/>
+  </g>
+  <g class="layer layer-path">
+    <path d="M200 200 q20 16 30 32 t40 16" fill="none" stroke="#6b5134" stroke-width="2.2" stroke-dasharray="5 3"/>
+  </g>
+  <g class="layer layer-path-touristic">
+    <path d="M200 200 q20 16 30 32 t40 16" fill="none" stroke="#8a6a45" stroke-width="3.2"/>
+    <rect x="226" y="220" width="10" height="5" fill="#c9a36a"/>
+  </g>
+  <g class="layer layer-sprawl">
+    <g transform="translate(18,200)">
+      <rect width="12" height="10" fill="#d8c8a4"/><path d="M-1 0h14l-7-6z" fill="#9a3e32"/>
+      <rect x="16" y="4" width="12" height="10" fill="#e8d3a4"/><path d="M15 4h14l-7-6z" fill="#6d2b23"/>
+      <rect x="8" y="16" width="12" height="10" fill="#d8c8a4"/><path d="M7 16h14l-7-6z" fill="#9a3e32"/>
+    </g>
+  </g>
+  <g class="layer layer-edge-shop">
+    <rect x="20" y="176" width="28" height="14" fill="#5b7179"/>
+    <rect x="24" y="180" width="8" height="6" fill="#f2c35a"/>
+  </g>
+  <!-- weather overlays -->
+  <g class="layer layer-storm">
+    <rect width="360" height="300" fill="#1a2a38" opacity="0.28"/>
+    <path d="M40 40h50l-10 16h20l-40 28 12-20h-18z" fill="#9aa8b0" opacity="0.7"/>
+    <path d="M200 28h60l-12 18h24l-48 30 14-22h-20z" fill="#c5ced3" opacity="0.75"/>
+    <path d="M80 0 v40 M90 0 v50 M110 0 v30" stroke="#a9c0cc" stroke-width="1.2" opacity="0.7"/>
+  </g>
+  <g class="layer layer-heatwave">
+    <rect width="360" height="300" fill="#e08a4d" opacity="0.22"/>
+  </g>
+  <rect class="layer layer-dusk" width="360" height="300" fill="url(#intro-dusk)"/>
+  <!-- Labels -->
+  <g font-family="Nunito Sans, Segoe UI, sans-serif" font-size="10" font-weight="800" fill="#142228">
+    <text x="118" y="80">Altstadt</text>
+    <text x="184" y="88">Hafen</text>
+    <text x="64" y="198">Bahnhof</text>
+    <text x="236" y="222">Pelzerhaken</text>
+    <text x="268" y="42" fill="#073445">Ostsee</text>
+  </g>
+  <g transform="translate(28,28)">
+    <circle r="16" fill="#fff6ea" stroke="#0b4a5c" stroke-width="1.4"/>
+    <path d="M0-11 L3 0 0 11 -3 0z" fill="#9a3e32"/>
+    <path d="M-11 0 L0 3 11 0 0-3z" fill="#0b4a5c"/>
+    <text y="-19" text-anchor="middle" font-size="8" font-weight="700" fill="#0b4a5c" font-family="Nunito Sans, sans-serif">N</text>
+  </g>
+  <!-- Pins -->
+  <g class="map-pin intro-pin" data-place="hafen"  role="button" aria-label="Hafenwestseite">
+    <circle class="pin-hit" cx="210" cy="112" r="16"/><circle class="pin-ring" cx="210" cy="112" r="8"/><circle class="pin-dot" cx="210" cy="112" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="altstadt"  role="button" aria-label="Altstadt">
+    <circle class="pin-hit" cx="138" cy="118" r="16"/><circle class="pin-ring" cx="138" cy="118" r="8"/><circle class="pin-dot" cx="138" cy="118" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="wohnen"  role="button" aria-label="Wohnen nahe Hafen">
+    <circle class="pin-hit" cx="168" cy="168" r="16"/><circle class="pin-ring" cx="168" cy="168" r="8"/><circle class="pin-dot" cx="168" cy="168" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="verkehr"  role="button" aria-label="Innenstadtverkehr">
+    <circle class="pin-hit" cx="148" cy="178" r="16"/><circle class="pin-ring" cx="148" cy="178" r="8"/><circle class="pin-dot" cx="148" cy="178" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="pelzerhaken"  role="button" aria-label="Pelzerhaken">
+    <circle class="pin-hit" cx="270" cy="228" r="16"/><circle class="pin-ring" cx="270" cy="228" r="8"/><circle class="pin-dot" cx="270" cy="228" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="stadtrand"  role="button" aria-label="Stadtrand">
+    <circle class="pin-hit" cx="36" cy="210" r="16"/><circle class="pin-ring" cx="36" cy="210" r="8"/><circle class="pin-dot" cx="36" cy="210" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="ufer"  role="button" aria-label="Uferweg">
+    <circle class="pin-hit" cx="228" cy="200" r="16"/><circle class="pin-ring" cx="228" cy="200" r="8"/><circle class="pin-dot" cx="228" cy="200" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="strand"  role="button" aria-label="Strand">
+    <circle class="pin-hit" cx="300" cy="236" r="16"/><circle class="pin-ring" cx="300" cy="236" r="8"/><circle class="pin-dot" cx="300" cy="236" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="gruen"  role="button" aria-label="Stadtgrün">
+    <circle class="pin-hit" cx="70" cy="128" r="16"/><circle class="pin-ring" cx="70" cy="128" r="8"/><circle class="pin-dot" cx="70" cy="128" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="bahnhof"  role="button" aria-label="Bahnhof">
+    <circle class="pin-hit" cx="88" cy="186" r="16"/><circle class="pin-ring" cx="88" cy="186" r="8"/><circle class="pin-dot" cx="88" cy="186" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="markt"  role="button" aria-label="Markt">
+    <circle class="pin-hit" cx="124" cy="156" r="16"/><circle class="pin-ring" cx="124" cy="156" r="8"/><circle class="pin-dot" cx="124" cy="156" r="6"/>
+  </g>
+  <g class="map-pin intro-pin" data-place="jugend"  role="button" aria-label="Treffpunkte">
+    <circle class="pin-hit" cx="116" cy="176" r="16"/><circle class="pin-ring" cx="116" cy="176" r="8"/><circle class="pin-dot" cx="116" cy="176" r="6"/>
+  </g>
+</svg>
+          <p class="map-caption">Stilisierte, interaktive Karte · nicht maßstabsgetreu</p>
         </div>
-
         <div class="card">
           <p class="kicker">Serious Game zur Stadtplanung</p>
           <h1>Du planst Neustadt in Holstein</h1>
           <p class="lead">Rund 16.000 Menschen leben hier an der Lübecker Bucht – zwischen historischer Altstadt, Hafen und Ostsee.</p>
-          <p class="body-text">In sieben Situationen, angelehnt an echte Themen der Stadt, triffst du Entscheidungen. Jede Wahl verändert die Werte Wohnen, Grün &amp; Klima und Wirtschaft. Achte auf die Balance: Was dem einen Bereich hilft, kann einem anderen schaden.</p>
+          <p class="body-text">Von 2026 bis 2040 entscheidest du an Orten der Stadt. Jede Wahl verändert Karte, Kasse und die Werte Wohnen, Grün &amp; Klima und Wirtschaft – inklusive Überraschungen wie Sturmflut oder Fördergeld.</p>
+          <p class="hint" style="margin-top:0.85rem;">Schwierigkeit</p>
+          <div class="diff-row" id="diff-buttons"></div>
           <div class="actions">
             <button class="btn btn-gold" id="btn-start">Spiel starten</button>
+            <button class="btn btn-ghost" id="btn-continue" hidden>Spielstand fortsetzen</button>
+          </div>
+          <div class="link-row">
+            <a href="lehrkraefte.html">Hinweise für Lehrkräfte</a>
           </div>
         </div>
       </section>
 
-      <!-- GAME -->
-      <section id="screen-game" class="screen">
-        <div class="skyline-wrap" id="skyline" data-wohnen="mid" data-gruen="mid" data-wirtschaft="mid">
-          <svg class="skyline-svg" viewBox="0 0 390 128" role="img" aria-label="Stilisiertes Stadtbild von Hafen und Altstadt">
-            <defs>
-              <linearGradient id="skylineWater" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#3a8ea3"/>
-                <stop offset="1" stop-color="#0b4a5c"/>
-              </linearGradient>
-            </defs>
-            <rect x="0" y="92" width="390" height="36" fill="url(#skylineWater)"/>
-            <path class="wave" d="M0 100 q20 -8 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 v28 H0z" fill="#2a7a90" opacity="0.55"/>
-            <rect x="0" y="90" width="390" height="8" fill="#6b5134"/>
-            <rect x="0" y="88" width="390" height="3" fill="#8a6a45"/>
-            <!-- Crane -->
-            <g class="crane" transform="translate(300,18)">
-              <rect x="10" y="20" width="4" height="62" fill="#c4a06a"/>
-              <path d="M12 22 h48 l-6 4 H12z" fill="#d9a441"/>
-              <path d="M54 26 v18" stroke="#5b7179" stroke-width="1.2"/>
-              <rect x="50" y="44" width="8" height="6" fill="#9a3e32"/>
-            </g>
-            <!-- Church -->
-            <g transform="translate(148,8)">
-              <rect x="18" y="42" width="44" height="40" fill="#8a3a30"/>
-              <path d="M16 42h48l-24-16z" fill="#5c2a24"/>
-              <rect x="34" y="4" width="12" height="30" fill="#7a332b"/>
-              <path d="M32 4h16l-8-12z" fill="#2a1a16"/>
-              <rect x="37" y="12" width="6" height="8" fill="#f2c35a"/>
-              <rect x="28" y="54" width="8" height="14" fill="#f4e4bf"/>
-              <rect x="44" y="56" width="7" height="10" fill="#2a1a16"/>
-            </g>
-            <!-- Houses left -->
-            <g transform="translate(40,42)">
-              <rect x="0" y="28" width="36" height="22" fill="#c46a3a"/>
-              <path d="M-2 28h40l-20-16z" fill="#6d2b23"/>
-              <rect x="8" y="36" width="7" height="8" fill="#f4e4bf"/>
-              <rect x="20" y="36" width="7" height="8" fill="#f4e4bf"/>
-              <rect x="40" y="22" width="32" height="28" fill="#9a3e32"/>
-              <path d="M38 22h36l-18-14z" fill="#3d4f57"/>
-              <rect x="48" y="32" width="6" height="8" fill="#f4e4bf"/>
-              <rect x="60" y="32" width="6" height="8" fill="#f4e4bf"/>
-            </g>
-            <g class="house-extra" transform="translate(8,50)">
-              <rect x="0" y="22" width="28" height="20" fill="#d8c8a4"/>
-              <path d="M-2 22h32l-16-12z" fill="#9a3e32"/>
-              <rect x="6" y="28" width="6" height="7" fill="#2a1a16"/>
-            </g>
-            <!-- Houses right of church -->
-            <g transform="translate(230,46)">
-              <rect x="0" y="24" width="34" height="22" fill="#b4563a"/>
-              <path d="M-2 24h38l-19-14z" fill="#5c2a24"/>
-              <rect x="8" y="32" width="6" height="7" fill="#f4e4bf"/>
-              <rect x="20" y="32" width="6" height="7" fill="#f4e4bf"/>
-              <g class="house-extra">
-                <rect x="38" y="16" width="30" height="30" fill="#cfc4a8"/>
-                <path d="M36 16h34l-17-13z" fill="#0b4a5c"/>
-                <rect x="46" y="26" width="6" height="8" fill="#f4e4bf"/>
-              </g>
-            </g>
-            <!-- Trees -->
-            <g class="tree">
-              <rect x="118" y="78" width="5" height="12" fill="#6d2b23"/>
-              <circle cx="120.5" cy="72" r="11" fill="#3d6b3c"/>
-              <circle cx="112" cy="76" r="7" fill="#4e7a4a"/>
-              <rect x="348" y="78" width="5" height="12" fill="#6d2b23"/>
-              <circle cx="350.5" cy="70" r="12" fill="#2f6b4f"/>
-              <circle cx="340" cy="76" r="7" fill="#4e7a4a"/>
-            </g>
-            <!-- Boats -->
-            <g class="boat">
-              <path d="M70 104 l28 0 6 8 -40 0z" fill="#fff6ea" stroke="#062a38" stroke-width="0.8"/>
-              <path d="M86 104 v-16" stroke="#6d2b23" stroke-width="1.4"/>
-              <path d="M86 88 l14 12 h-14z" fill="#9a3e32"/>
-              <path d="M300 106 l24 0 5 7 -34 0z" fill="#f2c35a" stroke="#062a38" stroke-width="0.8"/>
-            </g>
-          </svg>
+      <section id="screen-play" class="screen">
+        <div class="hud">
+          <div class="hud-badge" id="hud-year">2026</div>
+          <div class="hud-badge" id="hud-budget-wrap">Kasse <span id="hud-budget">80</span></div>
+          <div class="hud-progress" id="hud-progress">1 / 13</div>
         </div>
-
         <div class="stats" aria-live="polite">
-          <div class="stat">
-            <div class="stat-label">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#c46a3a" d="M2 14V7l6-5 6 5v7H9V9H7v5H2z"/></svg>
-              Wohnen
-            </div>
-            <div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:50%"></div></div>
-            <div class="stat-value" data-stat="wohnen">50</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#2f6b4f" d="M8 1c3 3 6 5 6 8a6 6 0 1 1-12 0c0-3 3-5 6-8z"/></svg>
-              Grün &amp; Klima
-            </div>
-            <div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:50%"></div></div>
-            <div class="stat-value" data-stat="gruen">50</div>
-          </div>
-          <div class="stat">
-            <div class="stat-label">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="#1b6f86"/><text x="8" y="11" text-anchor="middle" font-size="8" font-weight="700" fill="#fff6ea">€</text></svg>
-              Wirtschaft
-            </div>
-            <div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:50%"></div></div>
-            <div class="stat-value" data-stat="wirtschaft">50</div>
-          </div>
+          <div class="stat"><div class="stat-label">Wohnen</div><div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:50%"></div></div><div class="stat-value" data-stat="wohnen">50</div></div>
+          <div class="stat"><div class="stat-label">Grün &amp; Klima</div><div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:50%"></div></div><div class="stat-value" data-stat="gruen">50</div></div>
+          <div class="stat"><div class="stat-label">Wirtschaft</div><div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:50%"></div></div><div class="stat-value" data-stat="wirtschaft">50</div></div>
+        </div>
+        <div class="map-stage">
+          <svg id="stadt-map" class="map-svg" viewBox="0 0 360 300" role="img" aria-labelledby="map-title map-desc" data-weather="fair" data-year="2026">
+  <title id="map-title">Interaktive Karte von Neustadt in Holstein</title>
+  <desc id="map-desc">Ostsee im Osten, Hafen und Altstadt in der Mitte, Pelzerhaken im Süden. Marker zeigen Planungssituationen. Nicht maßstabsgetreu.</desc>
+  <defs>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7ec4d4"/><stop offset="1" stop-color="#1d6f86"/>
+    </linearGradient>
+    <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4e4bf"/><stop offset="1" stop-color="#e2c891"/>
+    </linearGradient>
+    <pattern id="waves" width="24" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 6 q6 -5 12 0 t12 0" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.2"/>
+    </pattern>
+    <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a3350" stop-opacity="0.35"/><stop offset="1" stop-color="#0b1c28" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="300" fill="url(#land)"/>
+  <path fill="url(#water)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+  <path fill="url(#waves)" class="wave" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+  <path d="M206 0c18 40-2 70 0 94-4 32-49 42-52 70-2 26 26 36 26 58 2 32-16 50-38 78l10 0c20-26 36-44 34-76 0-22-28-34-26-58 3-28 48-40 52-70 2-22-14-50 2-96z" fill="#f0d7a2"/>
+  <!-- Hafenbecken -->
+  <path d="M168 96h78v54H168z" fill="#1d6f86"/>
+  <path d="M168 96h78v54H168z" fill="url(#waves)"/>
+  <rect x="166" y="94" width="8" height="58" fill="#8a6a45"/>
+  <rect x="240" y="94" width="8" height="40" fill="#8a6a45"/>
+  <rect x="168" y="92" width="80" height="6" fill="#6b5134"/>
+  <rect x="200" y="118" width="36" height="5" fill="#6b5134"/>
+  <g class="layer layer-hafen-green">
+    <rect x="172" y="98" width="70" height="12" fill="#6b8f4e"/>
+    <circle cx="180" cy="104" r="5" fill="#2f6b4f"/>
+    <circle cx="198" cy="103" r="6" fill="#4e7a4a"/>
+    <circle cx="220" cy="105" r="5.5" fill="#2f6b4f"/>
+    <path d="M176 128 l40 0 2 4 -44 0z" fill="#c9a36a"/>
+  </g>
+  <g class="layer layer-hafen-mix">
+    <rect x="174" y="100" width="14" height="16" fill="#cfc4a8"/>
+    <path d="M173 100h16l-8-6z" fill="#9a3e32"/>
+    <rect x="192" y="102" width="12" height="14" fill="#e8d3a4"/>
+    <path d="M191 102h14l-7-5z" fill="#0b4a5c"/>
+    <rect x="208" y="100" width="16" height="16" fill="#d8c8a4"/>
+    <path d="M207 100h18l-9-6z" fill="#9a3e32"/>
+  </g>
+  <g class="layer layer-hafen-industry">
+    <rect x="176" y="99" width="8" height="22" fill="#5b7179"/>
+    <rect x="188" y="106" width="18" height="12" fill="#3d4f57"/>
+    <rect x="214" y="100" width="6" height="24" fill="#6d2b23"/>
+    <path d="M184 132 l16 0 3 5 -22 0z" fill="#9a3e32"/>
+    <path d="M208 134 l18 0 3 5 -24 0z" fill="#fff6ea" stroke="#0b4a5c" stroke-width="0.6"/>
+  </g>
+  <g class="layer layer-heat-strong">
+    <path d="M160 150 q20 10 40 4 t50 6" fill="none" stroke="#c44b38" stroke-width="2.4" stroke-dasharray="4 3"/>
+    <circle cx="236" cy="118" r="7" fill="#c44b38" stroke="#fff6ea" stroke-width="1"/>
+  </g>
+  <g class="layer layer-heat-medium">
+    <circle cx="236" cy="118" r="7" fill="#e08a4d" stroke="#fff6ea" stroke-width="1"/>
+  </g>
+  <!-- Altstadt base -->
+  <g transform="translate(86,86)">
+    <rect x="28" y="42" width="52" height="36" fill="#e8d3a4" stroke="#c4a06a" stroke-width="0.8" rx="2"/>
+    <rect x="38" y="52" width="28" height="16" fill="#f7ead3"/>
+    <g fill="#9a3e32">
+      <path d="M30 58h10v12H30z"/><path d="M30 58l5-6 5 6z"/>
+      <path d="M68 56h10v14H68z"/><path d="M68 56l5-7 5 7z"/>
+      <path d="M54 48h8v10h-8z"/><path d="M54 48l4-5 4 5z"/>
+    </g>
+    <g transform="translate(42,8)">
+      <rect x="6" y="22" width="16" height="26" fill="#8a3a30"/>
+      <path d="M4 22h20l-10-10z" fill="#5c2a24"/>
+      <rect x="11" y="0" width="6" height="22" fill="#7a332b"/>
+      <path d="M10 0h8l-4-8z" fill="#2a1a16"/>
+      <rect x="12.2" y="6" width="3.6" height="5" fill="#f2c35a"/>
+    </g>
+    <rect x="36" y="40" width="14" height="10" fill="#cfc4a8"/>
+    <path d="M35 40h16l-8-5z" fill="#6d2b23"/>
+  </g>
+  <g class="layer layer-solar">
+    <rect x="116" y="140" width="9" height="5" fill="#1b3a6b" transform="rotate(-20 120 142)"/>
+    <rect x="154" y="138" width="9" height="5" fill="#1b3a6b" transform="rotate(-18 158 140)"/>
+    <rect x="132" y="128" width="8" height="4" fill="#1b3a6b" transform="rotate(-16 136 130)"/>
+  </g>
+  <g class="layer layer-modern">
+    <rect x="128" y="150" width="14" height="22" fill="#8aa4b0"/>
+    <rect x="130" y="153" width="4" height="5" fill="#eaf6fa"/>
+    <rect x="136" y="153" width="4" height="5" fill="#eaf6fa"/>
+  </g>
+  <g class="layer layer-infill">
+    <rect x="150" y="152" width="10" height="14" fill="#c46a3a"/>
+    <path d="M149 152h12l-6-5z" fill="#5c2a24"/>
+  </g>
+  <g class="layer layer-social">
+    <rect x="100" y="158" width="22" height="14" fill="#d8c8a4" stroke="#0b4a5c" stroke-width="0.7"/>
+    <rect x="104" y="162" width="5" height="5" fill="#2a1a16"/>
+    <rect x="112" y="162" width="5" height="5" fill="#2a1a16"/>
+  </g>
+  <g class="layer layer-market-busy">
+    <circle cx="138" cy="148" r="3" fill="#c44b38"/>
+    <circle cx="146" cy="150" r="2.5" fill="#f2c35a"/>
+    <circle cx="132" cy="152" r="2.5" fill="#2f6b4f"/>
+    <rect x="126" y="154" width="20" height="3" fill="#fff6ea"/>
+  </g>
+  <g class="layer layer-youth">
+    <rect x="108" y="168" width="16" height="10" fill="#2a8aa0"/>
+    <path d="M107 168h18l-9-6z" fill="#0b4a5c"/>
+    <circle cx="116" cy="176" r="2" fill="#f2c35a"/>
+  </g>
+  <g class="layer layer-holiday">
+    <rect x="158" y="160" width="8" height="8" fill="#fff6ea" stroke="#c46a3a" stroke-width="0.7"/>
+    <rect x="168" y="162" width="8" height="8" fill="#fff6ea" stroke="#c46a3a" stroke-width="0.7"/>
+  </g>
+  <!-- Bahnhof -->
+  <g transform="translate(70,168)">
+    <rect x="0" y="10" width="36" height="14" fill="#d8c8a4" stroke="#8a6a45" stroke-width="0.7"/>
+    <rect x="4" y="4" width="28" height="8" fill="#9a3e32"/>
+    <rect x="-8" y="24" width="70" height="3" fill="#5b7179"/>
+    <rect x="-8" y="28" width="70" height="1.4" fill="#c4a06a"/>
+  </g>
+  <g class="layer layer-rail">
+    <path d="M62 200 q40 18 80 8 t90 20" fill="none" stroke="#d9a441" stroke-width="2.2" stroke-dasharray="6 4"/>
+    <circle cx="88" cy="200" r="4" fill="#d9a441"/>
+  </g>
+  <g class="layer layer-bus">
+    <path d="M88 200 q30 -20 70 -10 t80 40" fill="none" stroke="#1b6f86" stroke-width="2" stroke-dasharray="5 4"/>
+  </g>
+  <g class="layer layer-walk">
+    <path d="M126 160 q30 20 40 40 t50 50" fill="none" stroke="#2f6b4f" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  <g class="layer layer-cars">
+    <rect x="150" y="170" width="7" height="4" rx="1" fill="#3d4f57"/>
+    <rect x="160" y="176" width="7" height="4" rx="1" fill="#9a3e32"/>
+    <rect x="148" y="182" width="7" height="4" rx="1" fill="#0b4a5c"/>
+  </g>
+  <!-- Trees base -->
+  <g fill="#4e7a4a">
+    <circle cx="70" cy="120" r="7"/><circle cx="58" cy="132" r="5.5"/>
+    <circle cx="120" cy="200" r="7"/><circle cx="138" cy="188" r="6"/>
+    <circle cx="96" cy="210" r="5"/><circle cx="230" cy="200" r="6"/>
+  </g>
+  <g class="layer layer-trees-mid">
+    <circle cx="80" cy="148" r="6" fill="#2f6b4f"/>
+    <circle cx="200" cy="188" r="6" fill="#4e7a4a"/>
+  </g>
+  <g class="layer layer-trees-high">
+    <circle cx="80" cy="148" r="7" fill="#2f6b4f"/>
+    <circle cx="52" cy="160" r="7" fill="#4e7a4a"/>
+    <circle cx="200" cy="188" r="7" fill="#2f6b4f"/>
+    <circle cx="214" cy="176" r="6" fill="#4e7a4a"/>
+    <circle cx="164" cy="200" r="6" fill="#2f6b4f"/>
+    <circle cx="100" cy="120" r="6" fill="#4e7a4a"/>
+  </g>
+  <!-- Pelzerhaken beach -->
+  <path d="M200 230c20 4 40 8 80 6 28-1 54 8 80 4v40H200z" fill="#f0d7a2"/>
+  <path d="M200 248c30 6 70 4 160 8v24H200z" fill="#7ec4d4"/>
+  <rect x="248" y="236" width="36" height="4" fill="#8a6a45"/>
+  <rect x="260" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  <rect x="272" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  <g class="layer layer-beach-busy">
+    <rect x="236" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="248" y="224" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="284" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+    <rect x="296" y="225" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+  </g>
+  <g class="layer layer-beach-nature">
+    <path d="M220 232 q20 -10 40 -2 t50 -2" fill="#c4a06a"/>
+    <path d="M230 228 q16 -8 30 0" fill="#6b8f4e"/>
+  </g>
+  <g class="layer layer-wall">
+    <path d="M210 242 h140" stroke="#5b7179" stroke-width="5" stroke-linecap="round"/>
+    <path d="M210 239 h140" stroke="#fff6ea" stroke-width="1.2" opacity="0.5"/>
+  </g>
+  <g class="layer layer-dunes">
+    <path d="M214 236 q24 -14 50 -2 t60 -4 t40 2" fill="#e2c891"/>
+    <path d="M220 232 q20 -10 40 0 t50 -2" fill="#6b8f4e" opacity="0.85"/>
+  </g>
+  <g class="layer layer-path">
+    <path d="M200 200 q20 16 30 32 t40 16" fill="none" stroke="#6b5134" stroke-width="2.2" stroke-dasharray="5 3"/>
+  </g>
+  <g class="layer layer-path-touristic">
+    <path d="M200 200 q20 16 30 32 t40 16" fill="none" stroke="#8a6a45" stroke-width="3.2"/>
+    <rect x="226" y="220" width="10" height="5" fill="#c9a36a"/>
+  </g>
+  <g class="layer layer-sprawl">
+    <g transform="translate(18,200)">
+      <rect width="12" height="10" fill="#d8c8a4"/><path d="M-1 0h14l-7-6z" fill="#9a3e32"/>
+      <rect x="16" y="4" width="12" height="10" fill="#e8d3a4"/><path d="M15 4h14l-7-6z" fill="#6d2b23"/>
+      <rect x="8" y="16" width="12" height="10" fill="#d8c8a4"/><path d="M7 16h14l-7-6z" fill="#9a3e32"/>
+    </g>
+  </g>
+  <g class="layer layer-edge-shop">
+    <rect x="20" y="176" width="28" height="14" fill="#5b7179"/>
+    <rect x="24" y="180" width="8" height="6" fill="#f2c35a"/>
+  </g>
+  <!-- weather overlays -->
+  <g class="layer layer-storm">
+    <rect width="360" height="300" fill="#1a2a38" opacity="0.28"/>
+    <path d="M40 40h50l-10 16h20l-40 28 12-20h-18z" fill="#9aa8b0" opacity="0.7"/>
+    <path d="M200 28h60l-12 18h24l-48 30 14-22h-20z" fill="#c5ced3" opacity="0.75"/>
+    <path d="M80 0 v40 M90 0 v50 M110 0 v30" stroke="#a9c0cc" stroke-width="1.2" opacity="0.7"/>
+  </g>
+  <g class="layer layer-heatwave">
+    <rect width="360" height="300" fill="#e08a4d" opacity="0.22"/>
+  </g>
+  <rect class="layer layer-dusk" width="360" height="300" fill="url(#dusk)"/>
+  <!-- Labels -->
+  <g font-family="Nunito Sans, Segoe UI, sans-serif" font-size="10" font-weight="800" fill="#142228">
+    <text x="118" y="80">Altstadt</text>
+    <text x="184" y="88">Hafen</text>
+    <text x="64" y="198">Bahnhof</text>
+    <text x="236" y="222">Pelzerhaken</text>
+    <text x="268" y="42" fill="#073445">Ostsee</text>
+  </g>
+  <g transform="translate(28,28)">
+    <circle r="16" fill="#fff6ea" stroke="#0b4a5c" stroke-width="1.4"/>
+    <path d="M0-11 L3 0 0 11 -3 0z" fill="#9a3e32"/>
+    <path d="M-11 0 L0 3 11 0 0-3z" fill="#0b4a5c"/>
+    <text y="-19" text-anchor="middle" font-size="8" font-weight="700" fill="#0b4a5c" font-family="Nunito Sans, sans-serif">N</text>
+  </g>
+  <!-- Pins -->
+  <g class="map-pin" data-place="hafen" tabindex="0" role="button" aria-label="Hafenwestseite">
+    <circle class="pin-hit" cx="210" cy="112" r="16"/><circle class="pin-ring" cx="210" cy="112" r="8"/><circle class="pin-dot" cx="210" cy="112" r="6"/>
+  </g>
+  <g class="map-pin" data-place="altstadt" tabindex="0" role="button" aria-label="Altstadt">
+    <circle class="pin-hit" cx="138" cy="118" r="16"/><circle class="pin-ring" cx="138" cy="118" r="8"/><circle class="pin-dot" cx="138" cy="118" r="6"/>
+  </g>
+  <g class="map-pin" data-place="wohnen" tabindex="0" role="button" aria-label="Wohnen nahe Hafen">
+    <circle class="pin-hit" cx="168" cy="168" r="16"/><circle class="pin-ring" cx="168" cy="168" r="8"/><circle class="pin-dot" cx="168" cy="168" r="6"/>
+  </g>
+  <g class="map-pin" data-place="verkehr" tabindex="0" role="button" aria-label="Innenstadtverkehr">
+    <circle class="pin-hit" cx="148" cy="178" r="16"/><circle class="pin-ring" cx="148" cy="178" r="8"/><circle class="pin-dot" cx="148" cy="178" r="6"/>
+  </g>
+  <g class="map-pin" data-place="pelzerhaken" tabindex="0" role="button" aria-label="Pelzerhaken">
+    <circle class="pin-hit" cx="270" cy="228" r="16"/><circle class="pin-ring" cx="270" cy="228" r="8"/><circle class="pin-dot" cx="270" cy="228" r="6"/>
+  </g>
+  <g class="map-pin" data-place="stadtrand" tabindex="0" role="button" aria-label="Stadtrand">
+    <circle class="pin-hit" cx="36" cy="210" r="16"/><circle class="pin-ring" cx="36" cy="210" r="8"/><circle class="pin-dot" cx="36" cy="210" r="6"/>
+  </g>
+  <g class="map-pin" data-place="ufer" tabindex="0" role="button" aria-label="Uferweg">
+    <circle class="pin-hit" cx="228" cy="200" r="16"/><circle class="pin-ring" cx="228" cy="200" r="8"/><circle class="pin-dot" cx="228" cy="200" r="6"/>
+  </g>
+  <g class="map-pin" data-place="strand" tabindex="0" role="button" aria-label="Strand">
+    <circle class="pin-hit" cx="300" cy="236" r="16"/><circle class="pin-ring" cx="300" cy="236" r="8"/><circle class="pin-dot" cx="300" cy="236" r="6"/>
+  </g>
+  <g class="map-pin" data-place="gruen" tabindex="0" role="button" aria-label="Stadtgrün">
+    <circle class="pin-hit" cx="70" cy="128" r="16"/><circle class="pin-ring" cx="70" cy="128" r="8"/><circle class="pin-dot" cx="70" cy="128" r="6"/>
+  </g>
+  <g class="map-pin" data-place="bahnhof" tabindex="0" role="button" aria-label="Bahnhof">
+    <circle class="pin-hit" cx="88" cy="186" r="16"/><circle class="pin-ring" cx="88" cy="186" r="8"/><circle class="pin-dot" cx="88" cy="186" r="6"/>
+  </g>
+  <g class="map-pin" data-place="markt" tabindex="0" role="button" aria-label="Markt">
+    <circle class="pin-hit" cx="124" cy="156" r="16"/><circle class="pin-ring" cx="124" cy="156" r="8"/><circle class="pin-dot" cx="124" cy="156" r="6"/>
+  </g>
+  <g class="map-pin" data-place="jugend" tabindex="0" role="button" aria-label="Treffpunkte">
+    <circle class="pin-hit" cx="116" cy="176" r="16"/><circle class="pin-ring" cx="116" cy="176" r="8"/><circle class="pin-dot" cx="116" cy="176" r="6"/>
+  </g>
+</svg>
+          <div class="year-toast" id="year-toast" hidden>Jahr 2027</div>
+          <aside class="voice" id="voice" hidden>
+            <div class="voice-who"></div>
+            <p class="voice-text"></p>
+          </aside>
         </div>
         <div class="deltas" id="deltas" aria-live="polite"></div>
         <div class="feedback" id="feedback" role="status"></div>
-
-        <div class="card">
-          <div class="scenario-num" id="scenario-num">Situation 1 von 7</div>
-          <h2 class="scenario-title" id="scenario-title">Titel</h2>
-          <p class="scenario-text" id="scenario-text"></p>
-          <div class="term-box" id="term-box" hidden></div>
-          <div class="options" id="options"></div>
-          <div class="actions">
-            <button class="btn btn-gold" id="btn-action" disabled>Entscheidung treffen</button>
+        <div id="sheet" class="is-open">
+          <div class="card">
+            <div class="scenario-kicker" id="scenario-kicker">2026 · Hafen</div>
+            <h2 class="scenario-title" id="scenario-title">Titel</h2>
+            <p class="scenario-text" id="scenario-text"></p>
+            <div class="term-box" id="term-box" hidden></div>
+            <div class="options" id="options"></div>
+            <div class="actions">
+              <button class="btn" id="btn-action" disabled>Entscheidung treffen</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- RESULT -->
       <section id="screen-result" class="screen">
         <div class="card result-hero">
-          <p class="kicker">Auswertung</p>
-          <h2>Deine Stadtplanung</h2>
+          <p class="kicker" id="result-kicker">Auswertung</p>
+          <h2>Deine Stadtplanung · 2040</h2>
           <div class="score-seal" id="final-score" data-band="solide">0</div>
           <p class="result-text" id="result-text"></p>
+          <p class="hint" id="result-budget"></p>
           <div class="stats result-stats">
-            <div class="stat">
-              <div class="stat-label">Wohnen</div>
-              <div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:0%"></div></div>
-              <div class="stat-value" data-stat="wohnen">0</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Grün &amp; Klima</div>
-              <div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:0%"></div></div>
-              <div class="stat-value" data-stat="gruen">0</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Wirtschaft</div>
-              <div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:0%"></div></div>
-              <div class="stat-value" data-stat="wirtschaft">0</div>
-            </div>
+            <div class="stat"><div class="stat-label">Wohnen</div><div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:0%"></div></div><div class="stat-value" data-stat="wohnen">0</div></div>
+            <div class="stat"><div class="stat-label">Grün &amp; Klima</div><div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:0%"></div></div><div class="stat-value" data-stat="gruen">0</div></div>
+            <div class="stat"><div class="stat-label">Wirtschaft</div><div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:0%"></div></div><div class="stat-value" data-stat="wirtschaft">0</div></div>
           </div>
+          <p id="tradeoff" class="body-text" style="text-align:left"></p>
           <div class="actions">
             <button class="btn btn-gold" id="btn-restart">Nochmal spielen</button>
+            <button class="btn btn-ghost" id="btn-print">Zusammenfassung drucken</button>
           </div>
-          <h2 style="font-size:1.05rem;margin-top:1rem;">Deine Entscheidungen</h2>
+          <h2 class="section-title">Auszeichnungen</h2>
+          <ul class="achieve" id="achievement-list"></ul>
+          <div>
+            <h2 class="section-title">Ereignisse</h2>
+            <ul class="events-log" id="event-list"></ul>
+          </div>
+          <h2 class="section-title">Deine Entscheidungen</h2>
           <ul class="choices" id="choice-list"></ul>
-          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein.</p>
+          <h2 class="section-title">Fragen zur Auswertung</h2>
+          <ul class="reflect" id="reflect-list"></ul>
+          <h2 class="section-title">Deine letzten Ergebnisse</h2>
+          <ul class="highscores" id="highscore-list"></ul>
+          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein. Ereignisse sind zufällig und hängen von früheren Entscheidungen ab.</p>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
       Open-Source-Prototyp für Schulen ·
+      <a href="lehrkraefte.html">Lehrkräfte</a> ·
       <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
     </footer>
   </div>
 
+  <div class="modal" id="event-modal" hidden>
+    <div class="card" role="dialog" aria-labelledby="event-title" aria-modal="true">
+      <p class="kicker">Ereignis</p>
+      <h2 id="event-title">Titel</h2>
+      <p id="event-text" class="body-text"></p>
+      <div class="deltas" id="event-deltas"></div>
+      <div class="actions">
+        <button class="btn btn-gold" id="btn-event-ok">Weiter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="glossary" hidden>
+    <div class="card" role="dialog" aria-labelledby="glossary-title" aria-modal="true">
+      <h2 id="glossary-title">Lexikon</h2>
+      <dl class="glossary-list" id="glossary-list"></dl>
+      <div class="actions">
+        <button class="btn" id="btn-glossary-close">Schließen</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>
