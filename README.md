@@ -17,19 +17,27 @@ Zusätzlich gibt es eine Seite für den Unterricht: **[lehrkraefte.html](lehrkra
 
 ## Was du im Spiel tust
 
-1. Wähle eine Schwierigkeit und schau dir die stilisierte Karte an
-2. Bearbeite 13 Planungssituationen von 2026 bis 2038
-3. Sieh, wie Gebäude, Bäume, Wege oder Schutzanlagen auf der Karte erscheinen
-4. Reagiere auf Ereignisse wie Sturmflut, Hitzesommer oder Fördergeld
-5. Höre kurze Stimmen aus der Stadt und achte auf die Kasse
-6. Erhalte 2040 eine Auswertung mit Zielkonflikten, Auszeichnungen und Reflexionsfragen
+1. Wähle eine Schwierigkeit (optional einen Klassencode eingeben) und schau dir die stilisierte Karte an
+2. Ein kurzes Tutorial erklärt Karte, Orte und Werte
+3. Spiele 13 Situationen in vier Kapiteln von 2026 bis 2038 – die Karte nimmt den Bildschirm ein und lässt sich vergrößern, zoomen und verschieben
+4. Sieh, wie Gebäude, Bäume, Wege, Schiffe oder Schutzanlagen erscheinen
+5. Reagiere auf Ereignisse wie Sturmflut, Hitzesommer oder Fördergeld
+6. Höre unterschiedliche Stimmen aus der Stadt und achte auf die Kasse
+7. Erhalte 2040 eine Auswertung mit Zeitraffer der Karte, Zielkonflikten, Auszeichnungen, Reflexionsfragen, QR-Code und einem Bild zum Speichern
 
-Der Spielstand wird automatisch im Browser gespeichert. Ton ist standardmäßig aus (kann eingeschaltet werden). Die Zusammenfassung lässt sich drucken.
+Der Spielstand wird automatisch im Browser gespeichert. Ton ist standardmäßig aus. Es gibt einen Dunkelmodus.
+
+## Klassenmodus
+
+Lehrkräfte erzeugen auf der [Lehrkräfte-Seite](lehrkraefte.html) einen kurzen **Klassencode**. Alle Schüler:innen geben denselben Code beim Start ein und erleben dieselben Zufallsereignisse.
+
+Am Ende entsteht ein **Ergebniscode** (und ein QR-Code, lokal im Browser). Den Code kann die Lehrkraft auf derselben Seite einfügen: Die Klasse wird verglichen, ohne dass Daten an einen Server gehen.
 
 ## Für Schulen
 
 - Open Source (MIT)
 - Drei Schwierigkeitsgrade, Lexikon, Reflexionsfragen, Hinweise für Lehrkräfte
+- Klassenvergleich, Ergebnisbild (PNG) und Druckansicht
 - Anpassbar (Szenarien und Ereignisse in `js/data.js`)
 - Gut geeignet für Politik, Geografie, Wirtschaft oder Projektwochen
 
@@ -37,15 +45,9 @@ Der Spielstand wird automatisch im Browser gespeichert. Ton ist standardmäßig 
 
 - Reines HTML, CSS und JavaScript (kein Framework)
 - Mobil zuerst gestaltet
-- Keine API-Schlüssel, keine externen Kartendienste
+- Keine API-Schlüssel, keine externen Kartendienste, kein Server für Codes oder Export
 - Optional als PWA speicherbar, mit Service Worker für Offline-Dateien
 - Schriftarten laden bei vorhandener Verbindung nach, Systemschriften greifen als Fallback
-
-## Nächste Schritte (Ideen)
-
-- Klassenmodus / Gruppenwertung
-- Export als PDF-Datei
-- Weitere Ortsteile oder Vergleich mit einer zweiten Stadt
 
 ---
 
