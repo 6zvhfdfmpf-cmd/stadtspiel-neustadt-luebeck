@@ -2,448 +2,324 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StadtSpiel – Neustadt & Lübeck</title>
-  <style>
-    :root {
-      --primary: #1a365d;
-      --accent: #2b6cb0;
-      --green: #276749;
-      --red: #c53030;
-      --bg: #f7fafc;
-      --card: #ffffff;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: #2d3748;
-      line-height: 1.5;
-      min-height: 100vh;
-    }
-    .container { max-width: 720px; margin: 0 auto; padding: 1.5rem; }
-    header {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: white;
-      padding: 2rem 1.5rem;
-      text-align: center;
-    }
-    header h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
-    header p { opacity: 0.9; font-size: 1rem; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin: 1.25rem 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    h2 { color: var(--primary); margin-bottom: 1rem; font-size: 1.35rem; }
-    .city-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    @media (max-width: 500px) { .city-buttons { grid-template-columns: 1fr; } }
-    .city-btn {
-      border: 3px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 1.25rem;
-      cursor: pointer;
-      text-align: left;
-      background: white;
-      transition: all 0.2s;
-    }
-    .city-btn:hover, .city-btn.selected {
-      border-color: var(--accent);
-      background: #ebf8ff;
-    }
-    .city-btn h3 { margin-bottom: 0.4rem; color: var(--primary); }
-    .city-btn p { font-size: 0.9rem; color: #4a5568; }
-    .btn {
-      display: inline-block;
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn:hover { background: #2c5282; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-green { background: var(--green); }
-    .btn-green:hover { background: #22543d; }
-    .options { display: flex; flex-direction: column; gap: 0.75rem; margin: 1.25rem 0; }
-    .option {
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 1rem 1.1rem;
-      cursor: pointer;
-      transition: all 0.15s;
-      background: white;
-    }
-    .option:hover { border-color: var(--accent); background: #f0f9ff; }
-    .option.selected { border-color: var(--accent); background: #ebf8ff; }
-    .option strong { display: block; margin-bottom: 0.2rem; }
-    .progress {
-      height: 8px;
-      background: #e2e8f0;
-      border-radius: 4px;
-      margin: 1rem 0 1.5rem;
-      overflow: hidden;
-    }
-    .progress-bar {
-      height: 100%;
-      background: var(--accent);
-      transition: width 0.3s;
-    }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-    }
-    .stat {
-      background: #edf2f7;
-      border-radius: 8px;
-      padding: 0.75rem;
-      text-align: center;
-    }
-    .stat .label { font-size: 0.75rem; color: #718096; text-transform: uppercase; }
-    .stat .value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-    .feedback {
-      padding: 1rem;
-      border-radius: 8px;
-      margin-top: 1rem;
-      font-size: 0.95rem;
-    }
-    .feedback.good { background: #c6f6d5; color: #22543d; }
-    .feedback.neutral { background: #fefcbf; color: #744210; }
-    .feedback.bad { background: #fed7d7; color: #742a2a; }
-    .result-box {
-      text-align: center;
-      padding: 1.5rem;
-    }
-    .score-circle {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.2rem;
-      font-weight: 700;
-      margin: 0 auto 1.25rem;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem 1rem;
-      color: #718096;
-      font-size: 0.85rem;
-    }
-    a { color: var(--accent); }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b4a5c">
+  <title>StadtSpiel – Neustadt in Holstein</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="gull"></div>
+    <div class="gull"></div>
+    <div class="gull"></div>
+  </div>
 
-<header>
-  <h1>StadtSpiel</h1>
-  <p>Stadtplanung spielerisch begreifen · Neustadt & Lübeck</p>
-</header>
-
-<div class="container">
-
-  <!-- START -->
-  <div id="screen-start" class="screen active">
-    <div class="card">
-      <h2>Willkommen, Stadtplaner:in!</h2>
-      <p>Du entscheidest über die Zukunft einer Stadt. Wähle zuerst den Maßstab:</p>
-
-      <div class="city-buttons">
-        <div class="city-btn" data-city="neustadt" onclick="selectCity(this, 'neustadt')">
-          <h3>Neustadt in Holstein</h3>
-          <p>~16.000 Einwohner<br>Überschaubar · Hafen · Altstadt</p>
-        </div>
-        <div class="city-btn" data-city="luebeck" onclick="selectCity(this, 'luebeck')">
-          <h3>Lübeck</h3>
-          <p>~217.000 Einwohner<br>UNESCO · Großstadt · Komplex</p>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="15" fill="#0b4a5c" stroke="#f2c35a" stroke-width="1.5"/>
+          <path d="M16 6v20M8.5 16h15" stroke="#f2c35a" stroke-width="1.4"/>
+          <path d="M16 7.2l3.2 8.8H12.8L16 7.2z" fill="#fff6ea"/>
+          <circle cx="16" cy="16" r="2.1" fill="#f2c35a"/>
+        </svg>
+        <div>
+          <strong>StadtSpiel</strong>
+          <span>Neustadt in Holstein</span>
         </div>
       </div>
+      <div class="progress-meta" id="progress-meta" hidden>1 / 7</div>
+    </header>
 
-      <div style="margin-top:1.75rem; text-align:center;">
-        <button class="btn" id="btn-start" disabled onclick="startGame()">Spiel starten</button>
-      </div>
-    </div>
+    <main>
+      <!-- START -->
+      <section id="screen-start" class="screen active">
+        <div class="card map-wrap">
+          <h2>Karte von Neustadt</h2>
+          <svg class="map-svg" viewBox="0 0 360 300" role="img" aria-labelledby="map-title map-desc">
+            <title id="map-title">Stilisierte Karte von Neustadt in Holstein</title>
+            <desc id="map-desc">Ostsee im Osten, Hafen und Altstadt in der Mitte, Pelzerhaken im Süden. Nicht maßstabsgetreu.</desc>
+            <defs>
+              <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#7ec4d4"/>
+                <stop offset="1" stop-color="#1d6f86"/>
+              </linearGradient>
+              <linearGradient id="land" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f4e4bf"/>
+                <stop offset="1" stop-color="#e2c891"/>
+              </linearGradient>
+              <pattern id="waves" width="24" height="10" patternUnits="userSpaceOnUse">
+                <path d="M0 6 q6 -5 12 0 t12 0" fill="none" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.2"/>
+              </pattern>
+            </defs>
+            <rect width="360" height="300" fill="url(#land)"/>
+            <!-- Ostsee / Bucht rechts -->
+            <path fill="url(#water)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+            <path fill="url(#waves)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
+            <!-- Strandsaum -->
+            <path d="M206 0c18 40-2 70 0 94-4 32-49 42-52 70-2 26 26 36 26 58 2 32-16 50-38 78l10 0c20-26 36-44 34-76 0-22-28-34-26-58 3-28 48-40 52-70 2-22-14-50 2-96z" fill="#f0d7a2"/>
+            <!-- Hafenbecken -->
+            <path d="M168 96h78v54H168z" fill="#1d6f86"/>
+            <path d="M168 96h78v54H168z" fill="url(#waves)"/>
+            <rect x="166" y="94" width="8" height="58" fill="#8a6a45"/>
+            <rect x="240" y="94" width="8" height="40" fill="#8a6a45"/>
+            <rect x="168" y="92" width="80" height="6" fill="#6b5134"/>
+            <!-- Steg -->
+            <rect x="200" y="118" width="36" height="5" fill="#6b5134"/>
+            <circle cx="190" cy="115" r="3.2" fill="#c9a36a"/>
+            <circle cx="226" cy="108" r="3.2" fill="#c9a36a"/>
+            <!-- Boote im Hafen -->
+            <path d="M184 128 l14 0 3 5 -20 0z" fill="#9a3e32"/>
+            <path d="M208 132 l18 0 3 5 -24 0z" fill="#fff6ea" stroke="#0b4a5c" stroke-width="0.6"/>
+            <!-- Altstadt -->
+            <g transform="translate(86,86)">
+              <rect x="28" y="42" width="52" height="36" fill="#e8d3a4" stroke="#c4a06a" stroke-width="0.8" rx="2"/>
+              <!-- Markt -->
+              <rect x="38" y="52" width="28" height="16" fill="#f7ead3"/>
+              <!-- Häuser -->
+              <g fill="#9a3e32">
+                <path d="M30 58h10v12H30z"/>
+                <path d="M30 58l5-6 5 6z"/>
+                <path d="M68 56h10v14H68z"/>
+                <path d="M68 56l5-7 5 7z"/>
+                <path d="M54 48h8v10h-8z"/>
+                <path d="M54 48l4-5 4 5z"/>
+              </g>
+              <!-- Stadtkirche -->
+              <g transform="translate(42,8)">
+                <rect x="6" y="22" width="16" height="26" fill="#8a3a30"/>
+                <path d="M4 22h20l-10-10z" fill="#5c2a24"/>
+                <rect x="11" y="0" width="6" height="22" fill="#7a332b"/>
+                <path d="M10 0h8l-4-8z" fill="#2a1a16"/>
+                <rect x="12.2" y="6" width="3.6" height="5" fill="#f2c35a"/>
+              </g>
+              <!-- Rathaus andeutung -->
+              <rect x="36" y="40" width="14" height="10" fill="#cfc4a8"/>
+              <path d="M35 40h16l-8-5z" fill="#6d2b23"/>
+            </g>
+            <!-- Bahnhof -->
+            <g transform="translate(70,168)">
+              <rect x="0" y="10" width="36" height="14" fill="#d8c8a4" stroke="#8a6a45" stroke-width="0.7"/>
+              <rect x="4" y="4" width="28" height="8" fill="#9a3e32"/>
+              <rect x="-8" y="24" width="70" height="3" fill="#5b7179"/>
+              <rect x="-8" y="28" width="70" height="1.4" fill="#c4a06a"/>
+            </g>
+            <!-- Bäume -->
+            <g fill="#4e7a4a">
+              <circle cx="70" cy="120" r="7"/>
+              <circle cx="58" cy="132" r="5.5"/>
+              <circle cx="120" cy="200" r="7"/>
+              <circle cx="138" cy="188" r="6"/>
+              <circle cx="96" cy="210" r="5"/>
+              <circle cx="230" cy="200" r="6"/>
+            </g>
+            <g fill="#6d2b23">
+              <rect x="68" y="124" width="3" height="8"/>
+              <rect x="56.5" y="135" width="2.4" height="6"/>
+              <rect x="118.5" y="204" width="3" height="8"/>
+            </g>
+            <!-- Pelzerhaken Strand -->
+            <path d="M200 230c20 4 40 8 80 6 28-1 54 8 80 4v40H200z" fill="#f0d7a2"/>
+            <path d="M200 248c30 6 70 4 160 8v24H200z" fill="#7ec4d4"/>
+            <rect x="248" y="236" width="36" height="4" fill="#8a6a45"/>
+            <!-- kleine Strandkörbe -->
+            <rect x="260" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+            <rect x="272" y="226" width="7" height="8" rx="1" fill="#fff6ea" stroke="#6d2b23" stroke-width="0.6"/>
+            <!-- Labels -->
+            <g font-family="Nunito Sans, Segoe UI, sans-serif" font-size="11" font-weight="800" fill="#142228">
+              <text x="118" y="80">Altstadt</text>
+              <text x="184" y="88">Hafen</text>
+              <text x="64" y="198">Bahnhof</text>
+              <text x="236" y="222">Pelzerhaken</text>
+              <text x="268" y="42" fill="#073445">Ostsee</text>
+            </g>
+            <!-- Kompass -->
+            <g transform="translate(28,28)">
+              <circle r="16" fill="#fff6ea" stroke="#0b4a5c" stroke-width="1.4"/>
+              <path d="M0-11 L3 0 0 11 -3 0z" fill="#9a3e32"/>
+              <path d="M-11 0 L0 3 11 0 0-3z" fill="#0b4a5c"/>
+              <text y="-19" text-anchor="middle" font-size="8" font-weight="700" fill="#0b4a5c" font-family="Nunito Sans, sans-serif">N</text>
+            </g>
+          </svg>
+          <p class="map-caption">Stilisierte Orientierungskarte · nicht maßstabsgetreu</p>
+        </div>
+
+        <div class="card">
+          <p class="kicker">Serious Game zur Stadtplanung</p>
+          <h1>Du planst Neustadt in Holstein</h1>
+          <p class="lead">Rund 16.000 Menschen leben hier an der Lübecker Bucht – zwischen historischer Altstadt, Hafen und Ostsee.</p>
+          <p class="body-text">In sieben Situationen, angelehnt an echte Themen der Stadt, triffst du Entscheidungen. Jede Wahl verändert die Werte Wohnen, Grün &amp; Klima und Wirtschaft. Achte auf die Balance: Was dem einen Bereich hilft, kann einem anderen schaden.</p>
+          <div class="actions">
+            <button class="btn btn-gold" id="btn-start">Spiel starten</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAME -->
+      <section id="screen-game" class="screen">
+        <div class="skyline-wrap" id="skyline" data-wohnen="mid" data-gruen="mid" data-wirtschaft="mid">
+          <svg class="skyline-svg" viewBox="0 0 390 128" role="img" aria-label="Stilisiertes Stadtbild von Hafen und Altstadt">
+            <defs>
+              <linearGradient id="skylineWater" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3a8ea3"/>
+                <stop offset="1" stop-color="#0b4a5c"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="92" width="390" height="36" fill="url(#skylineWater)"/>
+            <path class="wave" d="M0 100 q20 -8 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 v28 H0z" fill="#2a7a90" opacity="0.55"/>
+            <rect x="0" y="90" width="390" height="8" fill="#6b5134"/>
+            <rect x="0" y="88" width="390" height="3" fill="#8a6a45"/>
+            <!-- Crane -->
+            <g class="crane" transform="translate(300,18)">
+              <rect x="10" y="20" width="4" height="62" fill="#c4a06a"/>
+              <path d="M12 22 h48 l-6 4 H12z" fill="#d9a441"/>
+              <path d="M54 26 v18" stroke="#5b7179" stroke-width="1.2"/>
+              <rect x="50" y="44" width="8" height="6" fill="#9a3e32"/>
+            </g>
+            <!-- Church -->
+            <g transform="translate(148,8)">
+              <rect x="18" y="42" width="44" height="40" fill="#8a3a30"/>
+              <path d="M16 42h48l-24-16z" fill="#5c2a24"/>
+              <rect x="34" y="4" width="12" height="30" fill="#7a332b"/>
+              <path d="M32 4h16l-8-12z" fill="#2a1a16"/>
+              <rect x="37" y="12" width="6" height="8" fill="#f2c35a"/>
+              <rect x="28" y="54" width="8" height="14" fill="#f4e4bf"/>
+              <rect x="44" y="56" width="7" height="10" fill="#2a1a16"/>
+            </g>
+            <!-- Houses left -->
+            <g transform="translate(40,42)">
+              <rect x="0" y="28" width="36" height="22" fill="#c46a3a"/>
+              <path d="M-2 28h40l-20-16z" fill="#6d2b23"/>
+              <rect x="8" y="36" width="7" height="8" fill="#f4e4bf"/>
+              <rect x="20" y="36" width="7" height="8" fill="#f4e4bf"/>
+              <rect x="40" y="22" width="32" height="28" fill="#9a3e32"/>
+              <path d="M38 22h36l-18-14z" fill="#3d4f57"/>
+              <rect x="48" y="32" width="6" height="8" fill="#f4e4bf"/>
+              <rect x="60" y="32" width="6" height="8" fill="#f4e4bf"/>
+            </g>
+            <g class="house-extra" transform="translate(8,50)">
+              <rect x="0" y="22" width="28" height="20" fill="#d8c8a4"/>
+              <path d="M-2 22h32l-16-12z" fill="#9a3e32"/>
+              <rect x="6" y="28" width="6" height="7" fill="#2a1a16"/>
+            </g>
+            <!-- Houses right of church -->
+            <g transform="translate(230,46)">
+              <rect x="0" y="24" width="34" height="22" fill="#b4563a"/>
+              <path d="M-2 24h38l-19-14z" fill="#5c2a24"/>
+              <rect x="8" y="32" width="6" height="7" fill="#f4e4bf"/>
+              <rect x="20" y="32" width="6" height="7" fill="#f4e4bf"/>
+              <g class="house-extra">
+                <rect x="38" y="16" width="30" height="30" fill="#cfc4a8"/>
+                <path d="M36 16h34l-17-13z" fill="#0b4a5c"/>
+                <rect x="46" y="26" width="6" height="8" fill="#f4e4bf"/>
+              </g>
+            </g>
+            <!-- Trees -->
+            <g class="tree">
+              <rect x="118" y="78" width="5" height="12" fill="#6d2b23"/>
+              <circle cx="120.5" cy="72" r="11" fill="#3d6b3c"/>
+              <circle cx="112" cy="76" r="7" fill="#4e7a4a"/>
+              <rect x="348" y="78" width="5" height="12" fill="#6d2b23"/>
+              <circle cx="350.5" cy="70" r="12" fill="#2f6b4f"/>
+              <circle cx="340" cy="76" r="7" fill="#4e7a4a"/>
+            </g>
+            <!-- Boats -->
+            <g class="boat">
+              <path d="M70 104 l28 0 6 8 -40 0z" fill="#fff6ea" stroke="#062a38" stroke-width="0.8"/>
+              <path d="M86 104 v-16" stroke="#6d2b23" stroke-width="1.4"/>
+              <path d="M86 88 l14 12 h-14z" fill="#9a3e32"/>
+              <path d="M300 106 l24 0 5 7 -34 0z" fill="#f2c35a" stroke="#062a38" stroke-width="0.8"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="stats" aria-live="polite">
+          <div class="stat">
+            <div class="stat-label">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#c46a3a" d="M2 14V7l6-5 6 5v7H9V9H7v5H2z"/></svg>
+              Wohnen
+            </div>
+            <div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:50%"></div></div>
+            <div class="stat-value" data-stat="wohnen">50</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#2f6b4f" d="M8 1c3 3 6 5 6 8a6 6 0 1 1-12 0c0-3 3-5 6-8z"/></svg>
+              Grün &amp; Klima
+            </div>
+            <div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:50%"></div></div>
+            <div class="stat-value" data-stat="gruen">50</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="#1b6f86"/><text x="8" y="11" text-anchor="middle" font-size="8" font-weight="700" fill="#fff6ea">€</text></svg>
+              Wirtschaft
+            </div>
+            <div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:50%"></div></div>
+            <div class="stat-value" data-stat="wirtschaft">50</div>
+          </div>
+        </div>
+        <div class="deltas" id="deltas" aria-live="polite"></div>
+        <div class="feedback" id="feedback" role="status"></div>
+
+        <div class="card">
+          <div class="scenario-num" id="scenario-num">Situation 1 von 7</div>
+          <h2 class="scenario-title" id="scenario-title">Titel</h2>
+          <p class="scenario-text" id="scenario-text"></p>
+          <div class="term-box" id="term-box" hidden></div>
+          <div class="options" id="options"></div>
+          <div class="actions">
+            <button class="btn btn-gold" id="btn-action" disabled>Entscheidung treffen</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESULT -->
+      <section id="screen-result" class="screen">
+        <div class="card result-hero">
+          <p class="kicker">Auswertung</p>
+          <h2>Deine Stadtplanung</h2>
+          <div class="score-seal" id="final-score" data-band="solide">0</div>
+          <p class="result-text" id="result-text"></p>
+          <div class="stats result-stats">
+            <div class="stat">
+              <div class="stat-label">Wohnen</div>
+              <div class="stat-track"><div class="stat-fill wohnen" data-stat="wohnen" style="width:0%"></div></div>
+              <div class="stat-value" data-stat="wohnen">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Grün &amp; Klima</div>
+              <div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:0%"></div></div>
+              <div class="stat-value" data-stat="gruen">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Wirtschaft</div>
+              <div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:0%"></div></div>
+              <div class="stat-value" data-stat="wirtschaft">0</div>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-gold" id="btn-restart">Nochmal spielen</button>
+          </div>
+          <h2 style="font-size:1.05rem;margin-top:1rem;">Deine Entscheidungen</h2>
+          <ul class="choices" id="choice-list"></ul>
+          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      Open-Source-Prototyp für Schulen ·
+      <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
+    </footer>
   </div>
 
-  <!-- GAME -->
-  <div id="screen-game" class="screen">
-    <div class="progress"><div class="progress-bar" id="progress" style="width:0%"></div></div>
-
-    <div class="stats">
-      <div class="stat"><div class="label">Wohnen</div><div class="value" id="stat-wohnen">50</div></div>
-      <div class="stat"><div class="label">Grün & Klima</div><div class="value" id="stat-gruen">50</div></div>
-      <div class="stat"><div class="label">Wirtschaft</div><div class="value" id="stat-wirtschaft">50</div></div>
-    </div>
-
-    <div class="card">
-      <div style="font-size:0.85rem; color:#718096; margin-bottom:0.5rem;" id="scenario-num">Szenario 1 / 5</div>
-      <h2 id="scenario-title">Titel</h2>
-      <p id="scenario-text" style="margin-bottom:1rem;"></p>
-
-      <div class="options" id="options"></div>
-
-      <div id="feedback" class="feedback" style="display:none;"></div>
-
-      <div style="margin-top:1.5rem; text-align:right;">
-        <button class="btn" id="btn-next" disabled onclick="nextScenario()">Weiter</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- RESULT -->
-  <div id="screen-result" class="screen">
-    <div class="card result-box">
-      <h2>Deine Stadtplanung</h2>
-      <div class="score-circle" id="final-score">0</div>
-      <p id="result-text" style="margin-bottom:1.5rem;"></p>
-
-      <div class="stats" style="max-width:400px; margin:0 auto 1.5rem;">
-        <div class="stat"><div class="label">Wohnen</div><div class="value" id="final-wohnen">0</div></div>
-        <div class="stat"><div class="label">Grün</div><div class="value" id="final-gruen">0</div></div>
-        <div class="stat"><div class="label">Wirtschaft</div><div class="value" id="final-wirtschaft">0</div></div>
-      </div>
-
-      <button class="btn btn-green" onclick="location.reload()">Nochmal spielen</button>
-    </div>
-  </div>
-
-</div>
-
-<footer>
-  Open-Source-Prototyp · <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck" target="_blank">GitHub</a><br>
-  StadtSpiel – für Schulen in und um Neustadt & Lübeck
-</footer>
-
-<script>
-  // ===== Daten =====
-  const scenarios = {
-    neustadt: [
-      {
-        title: "Hafenwestseite neu denken",
-        text: "Die Hafenwestseite soll revitalisiert werden. Es gibt Fördergeld. Was hat Vorrang?",
-        options: [
-          { label: "Wohnungen + Tourismus mischen", desc: "Belebung, aber mehr Verkehr", w: 15, g: -5, wi: 10 },
-          { label: "Maximal Grün & Promenade", desc: "Hohe Aufenthaltsqualität, weniger Wohnraum", w: -5, g: 20, wi: 5 },
-          { label: "Gewerbe & maritime Betriebe", desc: "Arbeitsplätze, weniger Wohn- und Grünfläche", w: -10, g: -10, wi: 20 }
-        ]
-      },
-      {
-        title: "Altstadt & Gestaltungssatzung",
-        text: "Ein Investor will ein modernes Gebäude in der Altstadt. Die Gestaltungssatzung ist streng.",
-        options: [
-          { label: "Streng am historischen Bild festhalten", desc: "Stadtbild bleibt, Investor springt ab", w: -5, g: 5, wi: -10 },
-          { label: "Kompromiss: moderne Architektur mit historischen Elementen", desc: "Ausgewogen", w: 10, g: 0, wi: 10 },
-          { label: "Ausnahme genehmigen – mehr Wohnraum", desc: "Schneller Wohnraum, Risiko für Stadtbild", w: 20, g: -5, wi: 5 }
-        ]
-      },
-      {
-        title: "Klimaziel 2035",
-        text: "Neustadt will klimaneutral werden. Die Wärmeplanung steht an. Wo investieren?",
-        options: [
-          { label: "Wärmenetze in Bestandsquartieren", desc: "Langfristig gut, teuer und langsam", w: 0, g: 20, wi: -5 },
-          { label: "Neue Bauflächen nur mit Solar + Wärmepumpe", desc: "Neubau wird teurer", w: -5, g: 15, wi: 0 },
-          { label: "Vor allem auf private Investitionen setzen", desc: "Günstiger für die Stadt, unsicherer Effekt", w: 5, g: 5, wi: 10 }
-        ]
-      },
-      {
-        title: "Verkehr in der Innenstadt",
-        text: "Der Durchgangsverkehr belastet die Altstadt. Anwohner und Händler sind unzufrieden.",
-        options: [
-          { label: "Mehr Fußgängerzonen + Radwege", desc: "Bessere Lebensqualität, Händler sind skeptisch", w: 5, g: 15, wi: -5 },
-          { label: "Parkplätze am Rand + Shuttle", desc: "Kompromiss", w: 5, g: 10, wi: 5 },
-          { label: "Status quo + bessere Beschilderung", desc: "Wenig Veränderung", w: 0, g: 0, wi: 5 }
-        ]
-      },
-      {
-        title: "Wohnungsdruck",
-        text: "Es fehlen bezahlbare Wohnungen. Eine große Fläche am Stadtrand steht zur Debatte.",
-        options: [
-          { label: "Neuen Wohnquartier bauen (auch Einfamilienhäuser)", desc: "Schnell Wohnraum, Flächenverbrauch", w: 20, g: -15, wi: 5 },
-          { label: "Innenverdichtung + Aufstockung", desc: "Nachhaltiger, aber langsamer und teurer", w: 10, g: 10, wi: 0 },
-          { label: "Sozialer Wohnungsbau in Kooperation", desc: "Gezielter, braucht Förderung", w: 15, g: 5, wi: -5 }
-        ]
-      }
-    ],
-    luebeck: [
-      {
-        title: "UNESCO-Altstadt lebendig halten",
-        text: "Die Altstadt ist Welterbe. Gleichzeitig braucht sie mehr Wohnen und weniger Leerstand.",
-        options: [
-          { label: "Strenger Denkmalschutz + Fördermittel für Sanierung", desc: "Stadtbild geschützt, teuer", w: 5, g: 5, wi: -5 },
-          { label: "Mehr Mischnutzung erlauben (Wohnen + Kultur + Gastronomie)", desc: "Belebung", w: 10, g: 0, wi: 15 },
-          { label: "Tourismus priorisieren", desc: "Wirtschaftlich stark, Wohnraum unter Druck", w: -10, g: -5, wi: 20 }
-        ]
-      },
-      {
-        title: "Mobilitätswende",
-        text: "Lübeck will den Autoverkehr reduzieren. Das betrifft die ganze Stadt.",
-        options: [
-          { label: "Radnetz + ÖPNV massiv ausbauen", desc: "Hohe Kosten, langfristig sehr positiv", w: 5, g: 20, wi: -5 },
-          { label: "City-Maut + Parkraummanagement", desc: "Schnelle Lenkungswirkung", w: 0, g: 15, wi: 5 },
-          { label: "Schrittweise + Pilotprojekte", desc: "Vorsichtig, aber langsam", w: 5, g: 10, wi: 5 }
-        ]
-      },
-      {
-        title: "Hitzesensible Stadtentwicklung",
-        text: "Immer mehr Hitzetage. Welche Maßnahme hat Vorrang?",
-        options: [
-          { label: "Mehr Stadtbäume + Entsiegelung", desc: "Sofort spürbar, braucht Fläche", w: -5, g: 25, wi: 0 },
-          { label: "Dach- und Fassadenbegrünung vorschreiben", desc: "Wirksam bei Neubau und Sanierung", w: 0, g: 20, wi: -5 },
-          { label: "Kaltluftschneisen freihalten", desc: "Wichtig, aber langfristig", w: 0, g: 15, wi: 0 }
-        ]
-      },
-      {
-        title: "Neue Wohnbauflächen",
-        text: "Es fehlen Wohnungen. Wo und wie soll gebaut werden?",
-        options: [
-          { label: "Große Neubaugebiete am Stadtrand", desc: "Viel Wohnraum, Flächenverbrauch", w: 25, g: -20, wi: 10 },
-          { label: "Innenentwicklung + Nachverdichtung", desc: "Nachhaltiger, Konfliktpotential", w: 15, g: 10, wi: 5 },
-          { label: "Modulare & geförderte Wohnungen priorisieren", desc: "Sozial ausgewogen", w: 20, g: 5, wi: 0 }
-        ]
-      },
-      {
-        title: "Wirtschaft & Hafen",
-        text: "Der Hafen und die Wirtschaft brauchen Flächen. Gleichzeitig soll die Stadt lebenswert bleiben.",
-        options: [
-          { label: "Hafenflächen für Logistik sichern", desc: "Wirtschaft stark, Konflikte mit Wohnen", w: -10, g: -10, wi: 25 },
-          { label: "Mischnutzung und Transformation alter Flächen", desc: "Ausgewogen", w: 10, g: 5, wi: 10 },
-          { label: "Stärker auf Tourismus und Kultur setzen", desc: "Lebensqualität, weniger Industrie", w: 5, g: 10, wi: 5 }
-        ]
-      }
-    ]
-  };
-
-  // ===== State =====
-  let selectedCity = null;
-  let current = 0;
-  let stats = { wohnen: 50, gruen: 50, wirtschaft: 50 };
-  let chosenOption = null;
-
-  function selectCity(el, city) {
-    document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('selected'));
-    el.classList.add('selected');
-    selectedCity = city;
-    document.getElementById('btn-start').disabled = false;
-  }
-
-  function startGame() {
-    if (!selectedCity) return;
-    current = 0;
-    stats = { wohnen: 50, gruen: 50, wirtschaft: 50 };
-    showScreen('game');
-    renderScenario();
-  }
-
-  function showScreen(name) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
-  }
-
-  function renderScenario() {
-    const list = scenarios[selectedCity];
-    const s = list[current];
-    document.getElementById('scenario-num').textContent = `Szenario ${current + 1} / ${list.length}`;
-    document.getElementById('scenario-title').textContent = s.title;
-    document.getElementById('scenario-text').textContent = s.text;
-    document.getElementById('progress').style.width = ((current) / list.length * 100) + '%';
-
-    const opts = document.getElementById('options');
-    opts.innerHTML = '';
-    s.options.forEach((o, i) => {
-      const div = document.createElement('div');
-      div.className = 'option';
-      div.innerHTML = `<strong>${o.label}</strong><span style="font-size:0.9rem;color:#4a5568">${o.desc}</span>`;
-      div.onclick = () => selectOption(div, o);
-      opts.appendChild(div);
-    });
-
-    document.getElementById('feedback').style.display = 'none';
-    document.getElementById('btn-next').disabled = true;
-    chosenOption = null;
-    updateStats();
-  }
-
-  function selectOption(el, option) {
-    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-    el.classList.add('selected');
-    chosenOption = option;
-    document.getElementById('btn-next').disabled = false;
-
-    // Feedback
-    const fb = document.getElementById('feedback');
-    let type = 'neutral';
-    let msg = 'Eine ausgewogene Entscheidung.';
-    const total = option.w + option.g + option.wi;
-    if (total >= 15) { type = 'good'; msg = 'Starke positive Wirkung auf die Gesamtbilanz.'; }
-    else if (total <= -5) { type = 'bad'; msg = 'Diese Wahl erzeugt deutliche Zielkonflikte.'; }
-    fb.className = 'feedback ' + type;
-    fb.textContent = msg;
-    fb.style.display = 'block';
-  }
-
-  function nextScenario() {
-    if (!chosenOption) return;
-    stats.wohnen = clamp(stats.wohnen + chosenOption.w);
-    stats.gruen = clamp(stats.gruen + chosenOption.g);
-    stats.wirtschaft = clamp(stats.wirtschaft + chosenOption.wi);
-
-    current++;
-    if (current >= scenarios[selectedCity].length) {
-      showResult();
-    } else {
-      renderScenario();
-    }
-  }
-
-  function clamp(v) {
-    return Math.max(0, Math.min(100, v));
-  }
-
-  function updateStats() {
-    document.getElementById('stat-wohnen').textContent = stats.wohnen;
-    document.getElementById('stat-gruen').textContent = stats.gruen;
-    document.getElementById('stat-wirtschaft').textContent = stats.wirtschaft;
-  }
-
-  function showResult() {
-    showScreen('result');
-    const avg = Math.round((stats.wohnen + stats.gruen + stats.wirtschaft) / 3);
-    document.getElementById('final-score').textContent = avg;
-    document.getElementById('final-wohnen').textContent = stats.wohnen;
-    document.getElementById('final-gruen').textContent = stats.gruen;
-    document.getElementById('final-wirtschaft').textContent = stats.wirtschaft;
-
-    let text = '';
-    if (avg >= 70) text = 'Sehr gute Balance! Du hast die Zielkonflikte weitgehend gelöst.';
-    else if (avg >= 55) text = 'Solide Planung. Einige Bereiche könnten noch besser ausbalanciert werden.';
-    else text = 'Die Stadt steht unter Druck. Bei der nächsten Runde mehr auf Ausgleich achten.';
-
-    if (selectedCity === 'neustadt') {
-      text += ' In einer kleineren Stadt wie Neustadt sind Entscheidungen oft direkter spürbar.';
-    } else {
-      text += ' In einer Großstadt wie Lübeck multiplizieren sich die Auswirkungen.';
-    }
-    document.getElementById('result-text').textContent = text;
-  }
-</script>
-
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
 </body>
 </html>
