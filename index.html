@@ -38,8 +38,15 @@
         </div>
       </div>
       <div class="top-actions">
-        <button class="icon-btn" id="btn-sound" type="button" aria-pressed="false">Ton aus</button>
-        <button class="icon-btn" id="btn-glossary" type="button">Lexikon</button>
+        <button class="icon-btn" id="btn-theme" type="button" aria-pressed="false" aria-label="Dunkles Design">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.3 0-.6-.1-.9A7 7 0 0 1 12 3z"/></svg><span class="visually-hidden">Design</span>
+        </button>
+        <button class="icon-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="Ton aus">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9v6h3l5 4V5L7 9H4zm11.5 3a3.5 3.5 0 0 0-1.8-3.1v6.2A3.5 3.5 0 0 0 15.5 12z"/></svg><span class="visually-hidden">Ton aus</span>
+        </button>
+        <button class="icon-btn" id="btn-glossary" type="button" aria-label="Lexikon">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v18H7.5A2.5 2.5 0 0 0 5 22.5V4.5zM7.5 4A.5.5 0 0 0 7 4.5V19h11V4H7.5z"/><path fill="currentColor" d="M9 7h7v2H9V7zm0 4h7v2H9v-2z"/></svg><span class="visually-hidden">Lexikon</span>
+        </button>
       </div>
     </header>
 
@@ -307,9 +314,12 @@
           <p class="kicker">Serious Game zur Stadtplanung</p>
           <h1>Du planst Neustadt in Holstein</h1>
           <p class="lead">Rund 16.000 Menschen leben hier an der Lübecker Bucht – zwischen historischer Altstadt, Hafen und Ostsee.</p>
-          <p class="body-text">Von 2026 bis 2040 entscheidest du an Orten der Stadt. Jede Wahl verändert Karte, Kasse und die Werte Wohnen, Grün &amp; Klima und Wirtschaft – inklusive Überraschungen wie Sturmflut oder Fördergeld.</p>
+          <p class="body-text">Von 2026 bis 2040 entscheidest du an Orten der Stadt. Jede Wahl verändert Karte, Kasse und die Werte Wohnen, Grün &amp; Klima und Wirtschaft.</p>
           <p class="hint" style="margin-top:0.85rem;">Schwierigkeit</p>
           <div class="diff-row" id="diff-buttons"></div>
+          <label class="class-field" for="class-code-input">Klassencode (optional)</label>
+          <input class="code-input" id="class-code-input" maxlength="10" placeholder="K-AB3DQ" autocomplete="off" spellcheck="false" aria-describedby="class-code-hint">
+          <p class="hint" id="class-code-hint">Optional: Derselbe Code, dieselben Ereignisse in der Klasse.</p>
           <div class="actions">
             <button class="btn btn-gold" id="btn-start">Spiel starten</button>
             <button class="btn btn-ghost" id="btn-continue" hidden>Spielstand fortsetzen</button>
@@ -331,8 +341,14 @@
           <div class="stat"><div class="stat-label">Grün &amp; Klima</div><div class="stat-track"><div class="stat-fill gruen" data-stat="gruen" style="width:50%"></div></div><div class="stat-value" data-stat="gruen">50</div></div>
           <div class="stat"><div class="stat-label">Wirtschaft</div><div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:50%"></div></div><div class="stat-value" data-stat="wirtschaft">50</div></div>
         </div>
-        <div class="map-stage">
-          <svg id="stadt-map" class="map-svg" viewBox="0 0 360 300" role="img" aria-labelledby="map-title map-desc" data-weather="fair" data-year="2026">
+        <div class="map-stage" id="map-stage">
+          <div class="map-controls">
+            <button type="button" class="icon-btn" id="btn-map-expand" aria-label="Karte vergrößern" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 10V4h6v2H6v4H4zm10-6h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm16 0v6h-6v-2h4v-4h2z"/></svg><span class="visually-hidden">Karte vergrößern</span></button>
+            <button type="button" class="icon-btn" id="btn-map-in" aria-label="Heranzoomen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg><span class="visually-hidden">Heranzoomen</span></button>
+            <button type="button" class="icon-btn" id="btn-map-out" aria-label="Herauszoomen"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 11h14v2H5z"/></svg><span class="visually-hidden">Herauszoomen</span></button>
+          </div>
+          <div class="timelapse-caption" id="timelapse-caption" hidden></div>
+          <svg id="stadt-map" class="map-svg" viewBox="0 0 360 500" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="map-title map-desc" data-weather="fair" data-year="2026">
   <title id="map-title">Interaktive Karte von Neustadt in Holstein</title>
   <desc id="map-desc">Ostsee im Osten, Hafen und Altstadt in der Mitte, Pelzerhaken im Süden. Marker zeigen Planungssituationen. Nicht maßstabsgetreu.</desc>
   <defs>
@@ -349,6 +365,29 @@
       <stop offset="0" stop-color="#1a3350" stop-opacity="0.35"/><stop offset="1" stop-color="#0b1c28" stop-opacity="0.15"/>
     </linearGradient>
   </defs>
+  <g id="map-pan">
+    <rect width="360" height="500" fill="url(#land)"/>
+    <path fill="url(#water)" d="M214 0h146v500H200c18-30 46-50 40-86 8-28-20-48-8-86 16-40 52-48 48-96 0-28-22-54 8-92 8-16-6-48 14-140z"/>
+    <path fill="url(#waves)" class="wave" d="M214 0h146v500H200c18-30 46-50 40-86 8-28-20-48-8-86 16-40 52-48 48-96 0-28-22-54 8-92 8-16-6-48 14-140z"/>
+    <path fill="url(#waves)" class="wave2" opacity="0.55" d="M220 0h140v500H208c16-30 42-52 36-88 8-28-18-46-6-84 16-40 50-50 46-98 0-26-20-54 8-90 8-18-4-50 16-140z"/>
+    <!-- Hinterland -->
+    <path d="M0 0h220v70H0z" fill="#d9c48a"/>
+    <path d="M0 38h200" stroke="#c4a06a" stroke-width="7" fill="none"/>
+    <path d="M0 38h200" stroke="#e8d7a8" stroke-width="2.2" fill="none" stroke-dasharray="8 6"/>
+    <circle cx="36" cy="22" r="10" fill="#4e7a4a"/>
+    <circle cx="52" cy="20" r="8" fill="#2f6b4f"/>
+    <circle cx="86" cy="18" r="11" fill="#3f7a4a"/>
+    <circle cx="120" cy="24" r="9" fill="#2f6b4f"/>
+    <circle cx="158" cy="16" r="8" fill="#4e7a4a"/>
+    <g class="district-label" transform="translate(78,54)">
+      <rect x="-36" y="-8" width="72" height="13" rx="6.5" fill="#fff6ea" fill-opacity="0.92"/>
+      <text text-anchor="middle" y="3">Hinterland</text>
+    </g><g class="district-label" transform="translate(300,40)">
+      <rect x="-24" y="-8" width="48" height="13" rx="6.5" fill="#0b4a5c" fill-opacity="0.8"/>
+      <text text-anchor="middle" y="3" fill="#fff6ea">Ostsee</text>
+    </g>
+    <g id="map-town" transform="translate(0,40)">
+
   <rect width="360" height="300" fill="url(#land)"/>
   <path fill="url(#water)" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
   <path fill="url(#waves)" class="wave" d="M210 0h150v300H188c22-28 40-46 38-78 0-22-28-32-26-58 3-28 48-38 52-70 3-24-18-52 0-94z"/>
@@ -558,33 +597,110 @@
   </g>
   <g class="map-pin" data-place="wohnen" tabindex="0" role="button" aria-label="Wohnen nahe Hafen">
     <circle class="pin-hit" cx="168" cy="168" r="16"/><circle class="pin-ring" cx="168" cy="168" r="8"/><circle class="pin-dot" cx="168" cy="168" r="6"/>
+  
+    <text class="pin-caption" x="168" y="155" text-anchor="middle">Wohnen</text>
   </g>
   <g class="map-pin" data-place="verkehr" tabindex="0" role="button" aria-label="Innenstadtverkehr">
     <circle class="pin-hit" cx="148" cy="178" r="16"/><circle class="pin-ring" cx="148" cy="178" r="8"/><circle class="pin-dot" cx="148" cy="178" r="6"/>
+  
+    <text class="pin-caption" x="148" y="165" text-anchor="middle">Verkehr</text>
   </g>
   <g class="map-pin" data-place="pelzerhaken" tabindex="0" role="button" aria-label="Pelzerhaken">
     <circle class="pin-hit" cx="270" cy="228" r="16"/><circle class="pin-ring" cx="270" cy="228" r="8"/><circle class="pin-dot" cx="270" cy="228" r="6"/>
   </g>
   <g class="map-pin" data-place="stadtrand" tabindex="0" role="button" aria-label="Stadtrand">
     <circle class="pin-hit" cx="36" cy="210" r="16"/><circle class="pin-ring" cx="36" cy="210" r="8"/><circle class="pin-dot" cx="36" cy="210" r="6"/>
+  
+    <text class="pin-caption" x="36" y="197" text-anchor="middle">Stadtrand</text>
   </g>
   <g class="map-pin" data-place="ufer" tabindex="0" role="button" aria-label="Uferweg">
     <circle class="pin-hit" cx="228" cy="200" r="16"/><circle class="pin-ring" cx="228" cy="200" r="8"/><circle class="pin-dot" cx="228" cy="200" r="6"/>
+  
+    <text class="pin-caption" x="228" y="187" text-anchor="middle">Uferweg</text>
   </g>
   <g class="map-pin" data-place="strand" tabindex="0" role="button" aria-label="Strand">
     <circle class="pin-hit" cx="300" cy="236" r="16"/><circle class="pin-ring" cx="300" cy="236" r="8"/><circle class="pin-dot" cx="300" cy="236" r="6"/>
+  
+    <text class="pin-caption" x="300" y="223" text-anchor="middle">Strand</text>
   </g>
   <g class="map-pin" data-place="gruen" tabindex="0" role="button" aria-label="Stadtgrün">
     <circle class="pin-hit" cx="70" cy="128" r="16"/><circle class="pin-ring" cx="70" cy="128" r="8"/><circle class="pin-dot" cx="70" cy="128" r="6"/>
+  
+    <text class="pin-caption" x="70" y="115" text-anchor="middle">Stadtgrün</text>
   </g>
   <g class="map-pin" data-place="bahnhof" tabindex="0" role="button" aria-label="Bahnhof">
     <circle class="pin-hit" cx="88" cy="186" r="16"/><circle class="pin-ring" cx="88" cy="186" r="8"/><circle class="pin-dot" cx="88" cy="186" r="6"/>
   </g>
   <g class="map-pin" data-place="markt" tabindex="0" role="button" aria-label="Markt">
     <circle class="pin-hit" cx="124" cy="156" r="16"/><circle class="pin-ring" cx="124" cy="156" r="8"/><circle class="pin-dot" cx="124" cy="156" r="6"/>
+  
+    <text class="pin-caption" x="124" y="143" text-anchor="middle">Markt</text>
   </g>
   <g class="map-pin" data-place="jugend" tabindex="0" role="button" aria-label="Treffpunkte">
     <circle class="pin-hit" cx="116" cy="176" r="16"/><circle class="pin-ring" cx="116" cy="176" r="8"/><circle class="pin-dot" cx="116" cy="176" r="6"/>
+  
+    <text class="pin-caption" x="116" y="163" text-anchor="middle">Treffpunkt</text>
+  </g>
+
+    </g>
+    <!-- Küste und Pelzerhaken, unterhalb der Stadt -->
+    <!-- Naht zwischen Stadt und Südküste glätten -->
+    <path fill="#f0d7a2" d="M150 318 C 200 328, 230 348, 218 378 C 208 400, 230 416, 255 426 L 188 432 C 170 400, 155 360, 148 318 Z"/>
+    <path fill="#7ec4d4" d="M250 328 C 280 350, 270 390, 300 415 C 330 435, 350 430, 360 428 V 300 H 250 Z" opacity="0.35"/>
+
+    <path fill="#f0d7a2" d="M0 330h196c12 22 28 48 18 78-8 26 16 44 28 70H0z"/>
+    <path fill="#e8c988" d="M0 430h250c20 20 40 28 70 28H0z" opacity="0.7"/>
+    <path fill="#f3e2b6" d="M200 400c20 16 50 28 90 34 18 4 40 8 70 6v60H188c8-22 20-44 12-64z"/>
+    <!-- Steg und Strand -->
+    <rect x="248" y="418" width="54" height="7" fill="#6b5134" transform="rotate(-8 248 418)"/>
+    <rect x="296" y="410" width="8" height="22" fill="#5a3f2a"/>
+    <circle cx="40" cy="370" r="11" fill="#4e7a4a"/>
+    <circle cx="62" cy="358" r="9" fill="#2f6b4f"/>
+    <circle cx="96" cy="380" r="10" fill="#3f7a4a"/>
+    <g class="district-label" transform="translate(86,348)">
+      <rect x="-34" y="-8" width="68" height="13" rx="6.5" fill="#fff6ea" fill-opacity="0.92"/>
+      <text text-anchor="middle" y="3">Wohngebiete</text>
+    </g>
+    <g class="district-label" transform="translate(310,455)">
+      <rect x="-28" y="-8" width="56" height="13" rx="6.5" fill="#fff6ea" fill-opacity="0.92"/>
+      <text text-anchor="middle" y="3">Strand</text>
+    </g>
+    
+    <!-- Schiffe über der Stadtkarte -->
+    <g transform="translate(292,90)">
+      <g class="ship-bob">
+        <polygon points="-11,2 12,2 7,8 -7,8" fill="#5a3f2a"/>
+        <rect x="-2" y="-11" width="1.6" height="13" fill="#fff6ea"/>
+        <polygon points="-1.2,-11 9,-3 -1.2,-1" fill="#fff6ea"/>
+        <polygon points="-1.2,-10 -8,-4 -1.2,-2" fill="#d7eef3"/>
+      </g>
+    </g>
+    <g transform="translate(268,210)">
+      <g class="ship-bob slow">
+        <polygon points="-9,2 10,2 6,7 -6,7" fill="#3a2a1c"/>
+        <rect x="-1.2" y="-8" width="1.4" height="10" fill="#f2c35a"/>
+        <polygon points="-0.6,-8 7,-2 -0.6,0" fill="#f2c35a"/>
+      </g>
+    </g>
+    <g transform="translate(318,355)">
+      <g class="ship-bob">
+        <ellipse cx="0" cy="6" rx="14" ry="3.5" fill="#1d6f86" opacity="0.35"/>
+        <polygon points="-16,2 18,2 12,8 -12,8" fill="#8a6a45"/>
+        <rect x="6" y="-6" width="6" height="8" fill="#3b4f57"/>
+        <rect x="-8" y="-4" width="8" height="6" fill="#5b7179"/>
+      </g>
+    </g>
+    <!-- Wohngebiete -->
+    <g transform="translate(28,400)">
+      <rect x="0" y="0" width="14" height="10" fill="#c9846a" rx="1"/>
+      <rect x="18" y="4" width="12" height="9" fill="#a85a48" rx="1"/>
+      <rect x="8" y="16" width="13" height="9" fill="#d7a07a" rx="1"/>
+      <rect x="34" y="10" width="11" height="8" fill="#b56a4a" rx="1"/>
+      <rect x="48" y="2" width="16" height="11" fill="#c46a3a" rx="1"/>
+    </g>
+    <path d="M70 340 C 90 380, 130 410, 200 430" fill="none" stroke="#c4a06a" stroke-width="5"/>
+    <path d="M70 340 C 90 380, 130 410, 200 430" fill="none" stroke="#e8d7a8" stroke-width="1.6" stroke-dasharray="6 5"/>
+<text x="18" y="492" font-size="6.5" fill="#3b4f57" font-family="Nunito Sans, sans-serif">Stilisiert · nicht maßstabsgetreu</text>
   </g>
 </svg>
           <div class="year-toast" id="year-toast" hidden>Jahr 2027</div>
@@ -593,15 +709,20 @@
             <p class="voice-text"></p>
           </aside>
         </div>
-        <div class="deltas" id="deltas" aria-live="polite"></div>
-        <div class="feedback" id="feedback" role="status"></div>
-        <div id="sheet" class="is-open">
+        <button type="button" class="peek-bar" id="btn-peek">
+          <span class="peek-year" id="peek-year">2026</span>
+          <strong id="peek-title">Situation öffnen</strong>
+          <span class="peek-cta">Öffnen</span>
+        </button>
+        <div id="sheet">
           <div class="card">
             <div class="scenario-kicker" id="scenario-kicker">2026 · Hafen</div>
             <h2 class="scenario-title" id="scenario-title">Titel</h2>
             <p class="scenario-text" id="scenario-text"></p>
             <div class="term-box" id="term-box" hidden></div>
             <div class="options" id="options"></div>
+            <div class="deltas" id="deltas" aria-live="polite"></div>
+            <div class="feedback" id="feedback" role="status"></div>
             <div class="actions">
               <button class="btn" id="btn-action" disabled>Entscheidung treffen</button>
             </div>
@@ -622,9 +743,19 @@
             <div class="stat"><div class="stat-label">Wirtschaft</div><div class="stat-track"><div class="stat-fill wirtschaft" data-stat="wirtschaft" style="width:0%"></div></div><div class="stat-value" data-stat="wirtschaft">0</div></div>
           </div>
           <p id="tradeoff" class="body-text" style="text-align:left"></p>
+          <div class="share-box" id="share-box">
+            <h2 class="section-title">Ergebnis teilen</h2>
+            <p class="hint">Diesen Code kann deine Lehrkraft auf der Lehrkräfte-Seite einfügen. Er entsteht nur auf diesem Gerät, ohne Server.</p>
+            <p class="result-code" id="result-code"></p>
+            <div class="qr-wrap" id="result-qr" aria-hidden="true"></div>
+            <div class="actions">
+              <button class="btn" type="button" id="btn-copy-code">Code kopieren</button>
+              <button class="btn btn-ghost" type="button" id="btn-export-png">Bild speichern</button>
+              <button class="btn btn-ghost" type="button" id="btn-print">Zusammenfassung drucken</button>
+            </div>
+          </div>
           <div class="actions">
             <button class="btn btn-gold" id="btn-restart">Nochmal spielen</button>
-            <button class="btn btn-ghost" id="btn-print">Zusammenfassung drucken</button>
           </div>
           <h2 class="section-title">Auszeichnungen</h2>
           <ul class="achieve" id="achievement-list"></ul>
@@ -638,7 +769,7 @@
           <ul class="reflect" id="reflect-list"></ul>
           <h2 class="section-title">Deine letzten Ergebnisse</h2>
           <ul class="highscores" id="highscore-list"></ul>
-          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein. Ereignisse sind zufällig und hängen von früheren Entscheidungen ab.</p>
+          <p class="footnote">Die Angaben sind vereinfacht und für den Unterricht aufbereitet (Stand 2026). Sie ersetzen keine amtliche Planung der Stadt Neustadt in Holstein. Ereignisse hängen von früheren Entscheidungen und – im Klassenmodus – vom gemeinsamen Code ab.</p>
         </div>
       </section>
     </main>
@@ -672,7 +803,33 @@
     </div>
   </div>
 
+  <div class="modal coach" id="tutorial" hidden>
+    <div class="card" role="dialog" aria-labelledby="tutorial-title" aria-modal="true">
+      <p class="coach-step" id="tutorial-step">Schritt 1 von 4</p>
+      <h2 id="tutorial-title">Willkommen in Neustadt</h2>
+      <p id="tutorial-text" class="body-text"></p>
+      <div class="actions">
+        <button class="btn btn-ghost" type="button" id="btn-tutorial-skip">Überspringen</button>
+        <button class="btn btn-gold" type="button" id="btn-tutorial-next">Weiter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="chapter-modal" hidden>
+    <div class="card chapter-card" role="dialog" aria-labelledby="chapter-title" aria-modal="true">
+      <p class="kicker" id="chapter-kicker">2026</p>
+      <h2 id="chapter-title">Kapitel</h2>
+      <p id="chapter-text" class="body-text"></p>
+      <div class="actions">
+        <button class="btn btn-gold" type="button" id="btn-chapter-ok">Zur Karte</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/qr.js"></script>
+  <script src="js/export.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/game.js"></script>
 </body>

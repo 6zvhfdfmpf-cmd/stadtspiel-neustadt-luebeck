@@ -613,6 +613,22 @@ window.STADTSPIEL = {
       weather: "fair"
     }
   ],
+  personaLines: [
+    { id: "lea", text: "Ich will hier später bleiben können – nicht nur im Sommer." },
+    { id: "lea", text: "Wenn der Bus kommt und der Strand nicht vollgestellt ist, passt das." },
+    { id: "joris", text: "Der Hafen muss arbeiten dürfen, sonst bleibt nur Kulisse." },
+    { id: "joris", text: "Die Ostsee gibt und nimmt. Wer das vergisst, baut an der falschen Stelle." },
+    { id: "mona", text: "Gäste kommen gern – wenn die Stadt dabei sie selbst bleibt." },
+    { id: "mona", text: "Ein guter Sommer rettet uns, ein schlechtes Image nicht." },
+    { id: "helga", text: "Ich brauche kurze Wege, Schatten und eine Bank. Mehr nicht." },
+    { id: "helga", text: "Wenn alles nur für Gäste ist, fühle ich mich fremd in meiner Stadt." },
+    { id: "tariq", text: "Wir suchen eine Wohnung, die man das ganze Jahr bezahlen kann." },
+    { id: "tariq", text: "Sicher zur Schule, sicher zur Arbeit – das ist für uns Planung." },
+    { id: "britta", text: "Wenn niemand mehr zu Fuß zum Markt kommt, bleibt mein Laden leer." },
+    { id: "britta", text: "Parkplätze helfen – aber ohne Atmosphäre kauft niemand." },
+    { id: "nils", text: "Jedes Jahr ohne Fortschritt macht 2035 schwerer." },
+    { id: "nils", text: "Technik allein reicht nicht. Die Stadt muss mitziehen." }
+  ],
   reflections: [
     "Welcher Zielkonflikt ist dir am deutlichsten geworden – und warum?",
     "Welche Gruppe in der Stadt trägt die Folgen deiner Planung besonders?",

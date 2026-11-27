@@ -3,13 +3,24 @@
 
   const DATA = window.STADTSPIEL;
   const AUDIO = window.StadtAudio;
-  const SAVE_KEY = "stadtspiel-save-v2";
+  const ENGINE = window.StadtEngine;
+  const SAVE_KEY = "stadtspiel-save-v3";
   const SCORE_KEY = "stadtspiel-scores-v2";
+  const TUTORIAL_KEY = "stadtspiel-tutorial-v3";
+  const THEME_KEY = "stadtspiel-theme";
   const STAT_KEYS = [
     { key: "wohnen", short: "w", label: "Wohnen" },
     { key: "gruen", short: "g", label: "Grün & Klima" },
     { key: "wirtschaft", short: "wi", label: "Wirtschaft" }
   ];
+  const EVENT_VOICES = {
+    sturmflut: { id: "joris", text: "Wer die Küste kennt, baut nicht ohne Schutz." },
+    hitzesommer: { id: "helga", text: "Ohne Schatten bleibe ich mittags lieber drinnen." },
+    foerdergeld: { id: "nils", text: "Förderung kommt zu denen, die schon etwas vorbereitet haben." },
+    tourismusboom: { id: "mona", text: "Ein volles Jahr rettet uns – wenn die Stadt das aushält." },
+    baukosten: { id: "britta", text: "Alles wird teurer. Dann muss man genauer wählen." },
+    engagement: { id: "tariq", text: "Schön, wenn wir mitreden dürfen – und das auch Folgen hat." }
+  };
 
   const state = {
     difficulty: "standard",
@@ -22,66 +33,38 @@
     selected: null,
     revealed: false,
     klima2035: null,
-    started: false
+    started: false,
+    seed: 0,
+    classCode: "",
+    choices: [],
+    rng: null
   };
 
+  const mapCam = { scale: 1, x: 0, y: 0 };
   const $ = (id) => document.getElementById(id);
+  const playEl = () => $("screen-play");
 
-  function clamp(v, min, max) {
-    if (min == null) min = 0;
-    if (max == null) max = 100;
-    return Math.max(min, Math.min(max, Math.round(v)));
-  }
+  function clamp(v, min, max) { return ENGINE.clamp(v, min, max); }
+  function computeScore(stats, budget) { return ENGINE.computeScore(stats, budget); }
+  function bandFor(score) { return ENGINE.bandFor(score); }
 
-  function computeScore(stats, budget) {
-    const vals = [stats.wohnen, stats.gruen, stats.wirtschaft];
-    const avg = (vals[0] + vals[1] + vals[2]) / 3;
-    const spread = Math.max(...vals) - Math.min(...vals);
-    const balancePenalty = Math.max(0, spread - 20) * 0.45;
-    let crisisPenalty = 0;
-    for (const v of vals) {
-      if (v < 35) crisisPenalty += (35 - v) * 0.65;
-      if (v < 20) crisisPenalty += (20 - v) * 0.5;
-    }
-    if (budget < 0) crisisPenalty += Math.min(18, Math.abs(budget) * 0.3);
-    return clamp(avg - balancePenalty - crisisPenalty);
-  }
-
-  function bandFor(score) {
-    if (score >= 70) return "hoch";
-    if (score >= 55) return "solide";
-    if (score >= 40) return "druck";
-    return "krise";
-  }
-
-  function currentScenario() {
-    return DATA.scenarios[state.current];
-  }
-
+  function currentScenario() { return DATA.scenarios[state.current]; }
   function yearNow() {
     const s = currentScenario();
     return s ? s.year : DATA.years.end;
   }
-
   function reducedMotion() {
     return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
-
-  function signed(n) {
-    return (n > 0 ? "+" : "") + n;
-  }
-
-  function persona(id) {
-    return DATA.personas.find((p) => p.id === id) || { name: "Stimme", role: "Stadt" };
-  }
+  function signed(n) { return (n > 0 ? "+" : "") + n; }
+  function persona(id) { return DATA.personas.find((p) => p.id === id) || { name: "Stimme", role: "" }; }
 
   function showScreen(name) {
     document.querySelectorAll(".screen").forEach((el) => {
       el.classList.toggle("active", el.id === "screen-" + name);
     });
     const footer = document.querySelector(".site-footer");
-    if (footer) footer.hidden = name === "play" || name === "result";
-    window.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" });
+    if (footer) footer.hidden = name === "play";
   }
 
   function formatText(text, onTerm) {
@@ -89,18 +72,15 @@
     const frag = document.createDocumentFragment();
     parts.forEach((part) => {
       const m = part.match(/^\{([a-z]+)\}$/);
-      if (m && DATA.terms[m[1]]) {
+      if (m) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "term";
-        btn.textContent = DATA.terms[m[1]].name;
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          AUDIO.tap();
-          onTerm(m[1], btn);
-        });
+        const term = DATA.terms[m[1]];
+        btn.textContent = term ? term.name : m[1];
+        btn.addEventListener("click", () => onTerm(m[1]));
         frag.appendChild(btn);
-      } else {
+      } else if (part) {
         frag.appendChild(document.createTextNode(part));
       }
     });
@@ -113,23 +93,17 @@
 
   function setTermBox(id) {
     const box = $("term-box");
-    if (!box) return;
-    if (!id || box.dataset.open === id) {
-      box.hidden = true;
-      box.innerHTML = "";
-      delete box.dataset.open;
-      return;
-    }
     const term = DATA.terms[id];
+    if (!box || !term) return;
     box.hidden = false;
-    box.dataset.open = id;
-    box.innerHTML = "<strong>" + term.name + ":</strong> " + term.text;
+    box.innerHTML = "";
+    const strong = document.createElement("strong");
+    strong.textContent = term.name + ". ";
+    box.appendChild(strong);
+    box.appendChild(document.createTextNode(term.text));
   }
 
-  function applyDelta(target, key, n) {
-    if (key === "budget") target.budget = clamp(target.budget - n, -40, 200);
-    else target.stats[key] = clamp(target.stats[key] + n);
-  }
+  function applyDelta(target, key, n) { ENGINE.applyDelta(target, key, n); }
 
   function optionEffects(opt) {
     return { w: opt.w || 0, g: opt.g || 0, wi: opt.wi || 0, cost: opt.cost || 0 };
@@ -137,22 +111,28 @@
 
   function renderHUD() {
     const y = state.started ? yearNow() : DATA.years.start;
-    $("hud-year").textContent = String(y);
-    $("hud-budget").textContent = String(state.budget);
-    $("hud-budget-wrap").classList.toggle("is-debt", state.budget < 0);
-    $("hud-progress").textContent = state.started
-      ? Math.min(state.current + 1, DATA.scenarios.length) + " / " + DATA.scenarios.length
-      : "";
+    if ($("hud-year")) $("hud-year").textContent = String(y);
+    if ($("hud-budget")) $("hud-budget").textContent = String(state.budget);
+    if ($("hud-budget-wrap")) $("hud-budget-wrap").classList.toggle("is-debt", state.budget < 0);
+    if ($("hud-progress")) $("hud-progress").textContent = (Math.min(state.current, DATA.scenarios.length - 1) + 1) + " / " + DATA.scenarios.length;
     STAT_KEYS.forEach(({ key }) => {
       const v = state.stats[key];
       document.querySelectorAll('.stat-fill[data-stat="' + key + '"]').forEach((el) => {
-        el.style.width = v + "%";
+        if (!el.closest(".result-stats")) el.style.width = v + "%";
       });
       document.querySelectorAll('.stat-value[data-stat="' + key + '"]').forEach((el) => {
-        if (el.closest(".result-stats")) return;
-        el.textContent = v;
+        if (!el.closest(".result-stats")) el.textContent = v;
       });
     });
+    const badge = $("hud-class");
+    if (badge) badge.remove();
+    if (state.started && state.classCode && $("hud-progress")) {
+      const el = document.createElement("div");
+      el.id = "hud-class";
+      el.className = "hud-badge class-badge";
+      el.textContent = state.classCode;
+      $("hud-progress").insertAdjacentElement("beforebegin", el);
+    }
   }
 
   function updateMap() {
@@ -170,12 +150,29 @@
     map.classList.toggle("is-dusk", late && flags.weather !== "storm" && flags.weather !== "heat");
   }
 
+  function applyMapFlags(flags, year) {
+    const prev = state.flags;
+    state.flags = Object.assign({ weather: "fair" }, flags || {});
+    if (year) {
+      const keep = state.started;
+      const cur = state.current;
+      state.started = true;
+      // yearNow uses current scenario; set attribute directly
+      updateMap();
+      $("stadt-map").setAttribute("data-year", String(year));
+      $("stadt-map").classList.toggle("is-dusk", year >= 2036 && state.flags.weather !== "storm" && state.flags.weather !== "heat");
+      state.started = keep;
+      state.current = cur;
+    } else updateMap();
+    state.flags = prev;
+    if (!year) updateMap();
+  }
+
   function renderMarkers() {
-    document.querySelectorAll(".map-pin").forEach((pin) => {
+    document.querySelectorAll("#stadt-map .map-pin").forEach((pin) => {
       const place = pin.getAttribute("data-place");
-      const idx = DATA.scenarios.findIndex((s) => s.place === place && DATA.scenarios.indexOf(s) === state.current);
-      const done = DATA.scenarios.some((s, i) => s.place === place && i < state.current);
       const upcoming = DATA.scenarios[state.current] && DATA.scenarios[state.current].place === place;
+      const done = DATA.scenarios.some((s, i) => s.place === place && i < state.current);
       pin.classList.toggle("is-active", !!(upcoming && state.started));
       pin.classList.toggle("is-done", done && !upcoming);
       pin.setAttribute("aria-current", upcoming && state.started ? "step" : "false");
@@ -184,42 +181,50 @@
 
   function renderDeltas(fx) {
     const box = $("deltas");
+    if (!box) return;
     box.innerHTML = "";
-    if (!fx) return;
     const items = [
-      [fx.w, "Wohnen"],
-      [fx.g, "Grün & Klima"],
-      [fx.wi, "Wirtschaft"],
-      [-fx.cost, "Kasse"]
+      { n: fx.w, label: "Wohnen" },
+      { n: fx.g, label: "Grün" },
+      { n: fx.wi, label: "Wirtschaft" },
+      { n: -(fx.cost || 0), label: "Kasse" }
     ];
-    items.forEach(([n, label]) => {
-      if (!n) return;
+    items.forEach((it) => {
+      if (!it.n) return;
       const chip = document.createElement("span");
-      chip.className = "delta-chip " + (n > 0 ? "up" : "down");
-      chip.textContent = signed(n) + " " + label;
+      chip.className = "delta-chip " + (it.n > 0 ? "up" : "down");
+      chip.textContent = it.label + " " + signed(it.n);
       box.appendChild(chip);
     });
   }
 
   function clearDeltas() {
-    $("deltas").innerHTML = "";
+    const box = $("deltas");
+    if (box) box.innerHTML = "";
+  }
+
+  function pickVoice(option) {
+    const primary = option && option.voice;
+    const lines = (DATA.personaLines || []).filter((v) => !primary || v.id === primary.id);
+    if (primary && lines.length && Math.random() < 0.45) {
+      const line = lines[Math.floor(Math.random() * lines.length)];
+      return { id: line.id, text: line.text };
+    }
+    return primary || (lines.length ? lines[Math.floor(Math.random() * lines.length)] : null);
   }
 
   function showVoice(voice) {
     const el = $("voice");
-    if (!voice) {
-      el.hidden = true;
-      return;
-    }
+    if (!el || !voice) return;
     const p = persona(voice.id);
     el.hidden = false;
-    el.querySelector(".voice-who").textContent = p.name + " · " + p.role;
-    el.querySelector(".voice-text").textContent = "„" + voice.text + "“";
-    AUDIO.bubble();
+    el.querySelector(".voice-who").textContent = p.name + (p.role ? " · " + p.role : "");
+    el.querySelector(".voice-text").textContent = voice.text;
   }
 
   function hideVoice() {
-    $("voice").hidden = true;
+    const el = $("voice");
+    if (el) el.hidden = true;
   }
 
   function setWeather(kind) {
@@ -227,59 +232,104 @@
     updateMap();
   }
 
-  function renderScenario() {
-    const s = currentScenario();
-    state.selected = null;
-    state.revealed = false;
-    setWeather("fair");
+  function setMapAspect(mode) {
+    const map = $("stadt-map");
+    if (map) map.setAttribute("preserveAspectRatio", mode);
+  }
+
+  function applyCam() {
+    const g = $("map-pan");
+    if (!g) return;
+    g.setAttribute("transform", "translate(" + mapCam.x + "," + mapCam.y + ") scale(" + mapCam.scale + ")");
+  }
+
+  function resetCam() {
+    mapCam.scale = 1;
+    mapCam.x = 0;
+    mapCam.y = 0;
+    applyCam();
+  }
+
+  function enterMapPhase() {
+    const play = playEl();
+    play.classList.add("map-focus");
+    play.classList.remove("sheet-open", "map-expanded");
+    setMapAspect("xMidYMid meet");
+    hideEvent();
     hideVoice();
     clearDeltas();
-    $("feedback").classList.remove("visible");
-    $("feedback").textContent = "";
-    setTermBox(null);
-    delete $("term-box").dataset.open;
+    const fb = $("feedback");
+    if (fb) { fb.classList.remove("visible"); fb.textContent = ""; }
+    renderScenario();
+    renderHUD();
+    updateMap();
+    renderMarkers();
+    const s = currentScenario();
+    if ($("peek-year")) $("peek-year").textContent = s ? String(s.year) : "";
+    if ($("peek-title")) $("peek-title").textContent = s ? (s.placeLabel + " · Situation öffnen") : "Situation öffnen";
+    save();
+  }
 
+  function openSheet() {
+    const play = playEl();
+    play.classList.remove("map-focus", "map-expanded");
+    play.classList.add("sheet-open");
+    setMapAspect("xMidYMid slice");
+    renderScenario();
+    renderMarkers();
+  }
+
+  function toggleExpand(force) {
+    const play = playEl();
+    const on = force == null ? !play.classList.contains("map-expanded") : force;
+    play.classList.toggle("map-expanded", on);
+    $("btn-map-expand").setAttribute("aria-pressed", on ? "true" : "false");
+    $("btn-map-expand").setAttribute("aria-label", on ? "Karte schließen" : "Karte vergrößern");
+    if (on) setMapAspect("xMidYMid slice");
+    else if (play.classList.contains("sheet-open")) setMapAspect("xMidYMid slice");
+    else setMapAspect("xMidYMid meet");
+  }
+
+  function renderScenario() {
+    const s = currentScenario();
+    if (!s) return;
+    state.selected = null;
+    state.revealed = false;
     $("scenario-kicker").textContent = s.year + " · " + s.placeLabel;
     $("scenario-title").textContent = s.title;
     const textEl = $("scenario-text");
     textEl.innerHTML = "";
     textEl.appendChild(formatText(s.text, setTermBox));
-
+    $("term-box").hidden = true;
     const opts = $("options");
     opts.innerHTML = "";
     s.options.forEach((opt, i) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "option";
-      btn.setAttribute("aria-pressed", "false");
+      btn.dataset.index = String(i);
       const strong = document.createElement("strong");
-      strong.appendChild(formatText(opt.label, setTermBox));
+      strong.textContent = plainText(opt.label);
       const span = document.createElement("span");
-      span.textContent = opt.desc + (opt.cost ? "  ·  Kasse " + signed(-opt.cost) : "");
+      span.textContent = plainText(opt.desc || "");
       btn.appendChild(strong);
       btn.appendChild(span);
       btn.addEventListener("click", () => selectOption(i));
       opts.appendChild(btn);
     });
-
     const action = $("btn-action");
     action.disabled = true;
-    action.textContent = "Entscheidung treffen";
     action.dataset.mode = "confirm";
-    action.classList.remove("btn-gold");
-
-    $("sheet").classList.add("is-open");
-    $("sheet").setAttribute("aria-hidden", "false");
-    renderHUD();
-    updateMap();
-    renderMarkers();
-    save();
+    action.textContent = "Entscheidung treffen";
+    clearDeltas();
+    const fb = $("feedback");
+    if (fb) { fb.classList.remove("visible"); fb.textContent = ""; }
   }
 
   function selectOption(index) {
     if (state.revealed) return;
     state.selected = index;
-    $("options").querySelectorAll(".option").forEach((btn, i) => {
+    document.querySelectorAll("#options .option").forEach((btn, i) => {
       const on = i === index;
       btn.classList.toggle("selected", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
@@ -292,140 +342,86 @@
     if (state.selected == null || state.revealed) return;
     const s = currentScenario();
     const option = s.options[state.selected];
-    state.revealed = true;
-    $("options").querySelectorAll(".option").forEach((btn) => { btn.disabled = true; });
-
     const fx = optionEffects(option);
     applyDelta(state, "wohnen", fx.w);
     applyDelta(state, "gruen", fx.g);
     applyDelta(state, "wirtschaft", fx.wi);
     applyDelta(state, "budget", fx.cost);
     Object.assign(state.flags, option.flags || {});
+    ENGINE.checkKlima(state, s);
+    state.choices[state.current] = state.selected;
     state.history.push({
       year: s.year,
       title: s.title,
       place: s.placeLabel,
       label: plainText(option.label),
-      feedback: option.feedback,
-      fx: fx
+      flags: Object.assign({}, option.flags || {}),
+      option: state.selected
     });
-
-    if (s.special === "klima2035") {
-      const ok = state.flags.heat === "strong" || (state.stats.gruen >= 65 && state.flags.heat !== "weak");
-      const mid = state.flags.heat === "medium" || state.stats.gruen >= 55;
-      state.klima2035 = ok ? "erreicht" : mid ? "gefaehrdet" : "verfehlt";
-    }
-
-    renderHUD();
-    updateMap();
+    state.revealed = true;
     renderDeltas(fx);
+    updateMap();
+    renderHUD();
+    renderMarkers();
     const fb = $("feedback");
-    let msg = option.feedback;
-    if (s.special === "klima2035") {
-      const t = {
-        erreicht: " Das Klimaziel 2035 rückt in greifbare Nähe.",
-        gefaehrdet: " Das Klimaziel 2035 steht auf der Kippe.",
-        verfehlt: " Das Klimaziel 2035 wird mit diesem Kurs voraussichtlich verfehlt."
-      };
-      msg += t[state.klima2035] || "";
-    }
-    if (state.budget < 0) msg += " Die Stadtkasse rutscht ins Minus.";
-    fb.textContent = msg;
+    const t = {
+      hoch: "Ein kräftiger Schritt – achte darauf, dass die anderen Werte mithalten.",
+      solide: "Ein tragfähiger Kompromiss. Die Stadt bleibt im Gleichgewicht.",
+      druck: "Die Stadt gerät unter Druck. Spätere Entscheidungen müssen gegensteuern.",
+      krise: "Das Gleichgewicht kippt. Ohne Korrektur wird es eng."
+    };
+    const score = computeScore(state.stats, state.budget);
+    fb.textContent = (option.feedback || "") + " " + (t[bandFor(score)] || "");
     fb.classList.add("visible");
-    showVoice(option.voice);
-
+    document.querySelectorAll("#options .option").forEach((btn, i) => {
+      btn.disabled = true;
+      btn.classList.toggle("chosen", i === state.selected);
+    });
     const action = $("btn-action");
     action.disabled = false;
     action.dataset.mode = "next";
-    action.classList.add("btn-gold");
     action.textContent = "Weiter";
-    action.focus();
-    AUDIO.confirm();
+    showVoice(pickVoice(option));
+    AUDIO.good();
     save();
   }
 
   function pickEvent() {
-    const cfg = DATA.difficulties[state.difficulty];
-    if (Math.random() > cfg.eventChance) return null;
-    const year = yearNow();
-    const used = new Set(state.eventsLog.map((e) => e.id));
-    const pool = DATA.events.filter((ev) => year >= (ev.afterYear || DATA.years.start) && !used.has(ev.id));
-    if (!pool.length) return null;
-    const weighted = [];
-    pool.forEach((ev) => {
-      let w = ev.weight || 1;
-      if (ev.prefer) {
-        Object.keys(ev.prefer).forEach((flag) => {
-          if (ev.prefer[flag].includes(state.flags[flag])) w += 1.2;
-        });
-      }
-      weighted.push({ ev, w });
-    });
-    const sum = weighted.reduce((a, x) => a + x.w, 0);
-    let r = Math.random() * sum;
-    for (const item of weighted) {
-      r -= item.w;
-      if (r <= 0) return item.ev;
-    }
-    return weighted[0].ev;
+    if (!state.rng) state.rng = ENGINE.mulberry32(state.seed || 1);
+    return ENGINE.pickEvent(state, state.rng, yearNow(), DATA);
   }
 
   function resolveEventEffects(ev) {
     const scale = DATA.difficulties[state.difficulty].eventScale;
-    let raw = ev.effects ? { ...ev.effects } : null;
-    if (ev.effectsBy) {
-      const flagName = Object.keys(ev.effectsBy)[0];
-      const table = ev.effectsBy[flagName];
-      raw = table[state.flags[flagName]] || table.default;
-    }
-    if (ev.bonusIf && ev.effects) {
-      const ok =
-        (ev.bonusIf.heat && state.flags.heat === ev.bonusIf.heat) ||
-        (ev.bonusIf.trees && state.flags.trees === ev.bonusIf.trees) ||
-        (ev.bonusIf.gMin && state.stats.gruen >= ev.bonusIf.gMin);
-      if (!ok && ev.id === "foerdergeld") {
-        raw = { w: 0, g: 1, wi: 1, cost: -8, note: "Es gibt eine kleinere Zuwendung, aber ohne große Vorarbeiten fällt sie bescheidener aus." };
-      }
-    }
-    const fx = {
-      w: Math.round((raw.w || 0) * scale),
-      g: Math.round((raw.g || 0) * scale),
-      wi: Math.round((raw.wi || 0) * scale),
-      cost: Math.round((raw.cost || 0) * scale),
-      note: raw.note
-    };
-    return fx;
+    return ENGINE.resolveEventEffects(ev, state, scale);
   }
 
   function showEvent(ev, fx) {
     const toast = $("year-toast");
     if (toast) toast.hidden = true;
     $("event-title").textContent = ev.title;
-    $("event-text").textContent = ev.text + " " + (fx.note || "");
+    $("event-text").textContent = ev.text + (fx.note ? " " + fx.note : "");
     const box = $("event-deltas");
     box.innerHTML = "";
     [
-      [fx.w, "Wohnen"],
-      [fx.g, "Grün & Klima"],
-      [fx.wi, "Wirtschaft"],
-      [-fx.cost, "Kasse"]
-    ].forEach(([n, label]) => {
-      if (!n) return;
+      { n: fx.w, label: "Wohnen" },
+      { n: fx.g, label: "Grün" },
+      { n: fx.wi, label: "Wirtschaft" },
+      { n: -(fx.cost || 0), label: "Kasse" }
+    ].forEach((it) => {
+      if (!it.n) return;
       const chip = document.createElement("span");
-      chip.className = "delta-chip " + (n > 0 ? "up" : "down");
-      chip.textContent = signed(n) + " " + label;
+      chip.className = "delta-chip " + (it.n > 0 ? "up" : "down");
+      chip.textContent = it.label + " " + signed(it.n);
       box.appendChild(chip);
     });
     $("event-modal").hidden = false;
-    $("event-modal").classList.add("is-open");
-    if (ev.weather === "storm") AUDIO.storm();
-    else AUDIO.event();
+    showVoice(EVENT_VOICES[ev.id] || ev.voice);
   }
 
   function hideEvent() {
-    $("event-modal").hidden = true;
-    $("event-modal").classList.remove("is-open");
-    setWeather("fair");
+    const modal = $("event-modal");
+    if (modal) modal.hidden = true;
   }
 
   function advance() {
@@ -436,7 +432,7 @@
       applyDelta(state, "gruen", fx.g);
       applyDelta(state, "wirtschaft", fx.wi);
       applyDelta(state, "budget", fx.cost);
-      state.eventsLog.push({ id: ev.id, title: ev.title, note: fx.note, year: yearNow(), fx });
+      state.eventsLog.push({ id: ev.id, title: ev.title, note: fx.note, year: yearNow(), fx: fx });
       setWeather(ev.weather || "fair");
       renderHUD();
       updateMap();
@@ -447,12 +443,28 @@
     goNext();
   }
 
+  function chapterAt(index) {
+    return (ENGINE.CHAPTERS || []).find((c) => c.at === index);
+  }
+
+  function showChapter(ch, then) {
+    $("chapter-kicker").textContent = "Jahr " + ch.year;
+    $("chapter-title").textContent = ch.title;
+    $("chapter-text").textContent = ch.text;
+    $("chapter-modal").hidden = false;
+    $("btn-chapter-ok").onclick = function () {
+      $("chapter-modal").hidden = true;
+      if (then) then();
+    };
+    AUDIO.year();
+  }
+
   function goNext() {
     hideEvent();
     hideVoice();
     state.current += 1;
     if (state.current >= DATA.scenarios.length) {
-      showResult();
+      runTimelapse(showResult);
       return;
     }
     AUDIO.year();
@@ -460,25 +472,65 @@
     toast.textContent = "Jahr " + yearNow();
     toast.hidden = false;
     setTimeout(() => { toast.hidden = true; }, reducedMotion() ? 0 : 1100);
-    renderScenario();
+    const ch = chapterAt(state.current);
+    if (ch) showChapter(ch, enterMapPhase);
+    else enterMapPhase();
+  }
+
+  function runTimelapse(done) {
+    const cap = $("timelapse-caption");
+    const play = playEl();
+    showScreen("play");
+    play.classList.add("map-focus", "map-expanded");
+    play.classList.remove("sheet-open");
+    setMapAspect("xMidYMid meet");
+    resetCam();
+    hideVoice();
+    const frames = [{ flags: { weather: "fair" }, year: 2026, title: "2026 · Der Anfang" }];
+    const acc = { weather: "fair" };
+    state.history.forEach((h) => {
+      Object.assign(acc, h.flags || {});
+      frames.push({ flags: Object.assign({}, acc), year: h.year, title: h.year + " · " + h.title });
+    });
+    let i = 0;
+    const delay = reducedMotion() ? 0 : 520;
+    function step() {
+      const fr = frames[i];
+      const keep = state.flags;
+      state.flags = Object.assign({}, fr.flags);
+      updateMap();
+      $("stadt-map").setAttribute("data-year", String(fr.year));
+      if (cap) {
+        cap.hidden = false;
+        cap.textContent = fr.title;
+      }
+      state.flags = Object.assign({}, keep);
+      i += 1;
+      if (i >= frames.length) {
+        setTimeout(() => {
+          if (cap) cap.hidden = true;
+          play.classList.remove("map-expanded", "map-focus");
+          updateMap();
+          done();
+        }, reducedMotion() ? 0 : 700);
+        return;
+      }
+      setTimeout(step, delay);
+    }
+    step();
   }
 
   function achievements() {
     const score = computeScore(state.stats, state.budget);
-    const spread =
-      Math.max(state.stats.wohnen, state.stats.gruen, state.stats.wirtschaft) -
-      Math.min(state.stats.wohnen, state.stats.gruen, state.stats.wirtschaft);
+    const spread = Math.max(state.stats.wohnen, state.stats.gruen, state.stats.wirtschaft) - Math.min(state.stats.wohnen, state.stats.gruen, state.stats.wirtschaft);
     const list = [];
-    if (score >= 70 && spread < 30) list.push({ id: "balance", title: "Ausgewogene Bucht", text: "Hohe Note bei geringer Schieflage." });
-    if (state.stats.gruen >= 75) list.push({ id: "klima", title: "Grünes Neustadt", text: "Klima und Natur hatten klaren Vorrang." });
-    if (state.stats.wohnen >= 75) list.push({ id: "sozial", title: "Stadt zum Wohnen", text: "Dauerhaftes Wohnen wurde stark gemacht." });
-    if (state.stats.wirtschaft >= 75) list.push({ id: "wirtschaft", title: "Starker Standort", text: "Betriebe und Tourismus wurden priorisiert." });
-    if (state.klima2035 === "erreicht") list.push({ id: "ziel2035", title: "Kurs auf 2035", text: "Das Klimaziel blieb in Reichweite." });
-    if (state.flags.flood && state.flags.flood !== "minimal") list.push({ id: "kueste", title: "Blick auf die Küste", text: "Hochwasserschutz wurde ernst genommen." });
-    if (state.flags.youth === "strong") list.push({ id: "jugend", title: "Stadt für Junge", text: "Treffpunkte und Mitbestimmung bekamen Raum." });
-    if (state.budget >= 40) list.push({ id: "kasse", title: "Solide Kasse", text: "Am Ende bleibt Handlungsspielraum." });
-    if (state.budget < 0) list.push({ id: "schulden", title: "Klamm haushalten", text: "Die Stadtkasse steht im Minus." });
-    if (state.eventsLog.some((e) => e.id === "sturmflut")) list.push({ id: "sturm", title: "Die Flut erlebt", text: "Eine Sturmflut hat eure Vorsorge geprüft." });
+    if (score >= 80 && spread <= 22) list.push({ title: "Ausgewogene Stadt", text: "Hohe Werte, ohne eine Seite zu opfern." });
+    if (state.klima2035 === "erreicht") list.push({ title: "Kurs auf 2035", text: "Das Klimaziel bleibt in Reichweite." });
+    if (state.budget >= 40) list.push({ title: "Solider Haushalt", text: "Am Ende bleibt Spielraum in der Stadtkasse." });
+    if (state.stats.wohnen >= 70) list.push({ title: "Wohnraum im Blick", text: "Dauerhaftes Wohnen wurde klar priorisiert." });
+    if (state.stats.gruen >= 70) list.push({ title: "Grünes Band", text: "Klima und Stadtgrün stehen besonders gut da." });
+    if (state.stats.wirtschaft >= 70) list.push({ title: "Starker Standort", text: "Arbeit und Gäste tragen die Stadt." });
+    if (state.flags.flood === "hard" || state.flags.flood === "nature") list.push({ title: "Küste im Blick", text: "Du hast den Schutz vor der Ostsee nicht vergessen." });
     return list;
   }
 
@@ -487,42 +539,36 @@
     const low = STAT_KEYS.reduce((a, b) => (s[a.key] <= s[b.key] ? a : b));
     const high = STAT_KEYS.reduce((a, b) => (s[a.key] >= s[b.key] ? a : b));
     const spread = s[high.key] - s[low.key];
-    let title, text;
-    if (band === "hoch") {
-      title = "Die ausgewogene Bucht";
-      text = "Sehr gute Balance! Du hast die Zielkonflikte über die Jahre im Blick behalten. In einer überschaubaren Stadt wie Neustadt sind solche Entscheidungen oft direkt im Alltag spürbar.";
-    } else if (band === "solide") {
-      title = "Solide, mit Spannungen";
-      text = "Solide Planung. Einige Bereiche könnten noch besser ausbalanciert werden – gerade weil Wohnen, Klima und Wirtschaft hier nah beieinanderliegen.";
-    } else if (band === "druck") {
-      title = "Stadt unter Druck";
-      text = "Die Stadt steht unter Druck. Einzelne Entscheidungen waren nachvollziehbar, aber zusammen entstehen deutliche Zielkonflikte.";
-    } else {
-      title = "Schieflage an der Bucht";
-      text = "Die Stadt gerät ins Ungleichgewicht. Ein Bereich wurde stark gemacht, andere kommen unter die Räder.";
-    }
-    if (band !== "hoch" && spread >= 30) {
-      text += " Die Werte liegen weit auseinander (Unterschied: " + spread + " Punkte) – das belastet die Gesamtnote.";
-    }
-    if (s[low.key] < 35) text += " Besonders unter Druck ist „" + low.label + "“ (" + s[low.key] + ").";
-    if (state.budget < 0) text += " Die leere Kasse engt künftige Spielräume ein.";
-    if (state.klima2035 === "verfehlt") text += " Das Klimaziel 2035 wurde voraussichtlich verfehlt.";
-    if (state.klima2035 === "erreicht") text += " Beim Klimaziel 2035 lagst du auf einem guten Kurs.";
-    return { title, text, score, band, low, high, spread };
+    const titles = {
+      hoch: "Eine tragfähige Stadt",
+      solide: "Eine Stadt im Gleichgewicht",
+      druck: "Eine Stadt unter Druck",
+      krise: "Eine Stadt in der Schieflage"
+    };
+    let text;
+    if (band === "hoch") text = "2040 ist Neustadt gut aufgestellt. Die Entscheidungen haben Wirkung gezeigt, ohne eine Seite ganz zu verlieren.";
+    else if (band === "solide") text = "2040 steht Neustadt solide da. Es bleibt aber sichtbar, wo du Schwerpunkte gesetzt hast.";
+    else if (band === "druck") text = "2040 spürt man die Spannungen: Einige Bereiche tragen die Stadt, andere sind zurückgeblieben.";
+    else text = "2040 steht Neustadt unter erheblichem Druck. Zielkonflikte wurden zu einseitig gelöst.";
+    if (state.klima2035 === "verfehlt") text += " Das Klimaziel 2035 wurde verfehlt.";
+    else if (state.klima2035 === "gefaehrdet") text += " Das Klimaziel 2035 bleibt gefährdet.";
+    else if (state.klima2035 === "erreicht") text += " Das Klimaziel 2035 bleibt erreichbar.";
+    if (state.budget < 0) text += " Die Stadtkasse ist am Ende im Minus.";
+    return { title: titles[band], text: text, high: high, low: low, spread: spread };
   }
 
   function confettiBurst() {
     if (reducedMotion()) return;
     const root = $("confetti");
-    root.innerHTML = "";
+    if (!root) return;
     root.hidden = false;
+    root.innerHTML = "";
     const colors = ["#f2c35a", "#2f6b4f", "#1b6f86", "#c46a3a", "#fff6ea"];
-    for (let i = 0; i < 48; i++) {
+    for (let i = 0; i < 40; i++) {
       const p = document.createElement("i");
       p.style.left = Math.random() * 100 + "%";
       p.style.background = colors[i % colors.length];
-      p.style.animationDelay = Math.random() * 0.4 + "s";
-      p.style.transform = "rotate(" + Math.random() * 180 + "deg)";
+      p.style.animationDelay = (Math.random() * 0.4) + "s";
       root.appendChild(p);
     }
     setTimeout(() => { root.hidden = true; root.innerHTML = ""; }, 2200);
@@ -532,7 +578,7 @@
     let list = [];
     try { list = JSON.parse(localStorage.getItem(SCORE_KEY) || "[]"); } catch (e) { list = []; }
     list.unshift({
-      score,
+      score: score,
       difficulty: state.difficulty,
       at: new Date().toISOString(),
       klima: state.klima2035
@@ -544,6 +590,16 @@
 
   function loadScores() {
     try { return JSON.parse(localStorage.getItem(SCORE_KEY) || "[]"); } catch (e) { return []; }
+  }
+
+  function resultCode() {
+    return ENGINE.encodeResult(state.seed, state.difficulty, state.choices);
+  }
+
+  function fillShare(code) {
+    $("result-code").textContent = code;
+    const box = $("result-qr");
+    if (box && window.StadtQR) box.innerHTML = StadtQR.toSvg(code, { fg: "#062a38", bg: "#fff6ea" });
   }
 
   function showResult() {
@@ -633,6 +689,8 @@
       hs.appendChild(li);
     });
 
+    fillShare(resultCode());
+
     if (band === "hoch") {
       AUDIO.good();
       confettiBurst();
@@ -644,15 +702,18 @@
     return {
       difficulty: state.difficulty,
       current: state.current,
-      stats: { ...state.stats },
+      stats: Object.assign({}, state.stats),
       budget: state.budget,
-      flags: { ...state.flags },
+      flags: Object.assign({}, state.flags),
       history: state.history.slice(),
       eventsLog: state.eventsLog.slice(),
       klima2035: state.klima2035,
       started: true,
       revealed: false,
-      selected: null
+      selected: null,
+      seed: state.seed,
+      classCode: state.classCode,
+      choices: state.choices.slice()
     };
   }
 
@@ -669,6 +730,38 @@
     try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; }
   }
 
+  function restoreRng() {
+    const rng = ENGINE.mulberry32(state.seed >>> 0);
+    const tmp = {
+      difficulty: state.difficulty,
+      flags: { weather: "fair" },
+      eventsLog: [],
+      stats: Object.assign({}, (DATA.difficulties[state.difficulty] || DATA.difficulties.standard).startStats),
+      budget: (DATA.difficulties[state.difficulty] || DATA.difficulties.standard).budget
+    };
+    for (let i = 0; i < state.current; i++) {
+      const s = DATA.scenarios[i];
+      const idx = state.choices[i] || 0;
+      const opt = s.options[idx];
+      ENGINE.applyDelta(tmp, "wohnen", opt.w || 0);
+      ENGINE.applyDelta(tmp, "gruen", opt.g || 0);
+      ENGINE.applyDelta(tmp, "wirtschaft", opt.wi || 0);
+      ENGINE.applyDelta(tmp, "budget", opt.cost || 0);
+      Object.assign(tmp.flags, opt.flags || {});
+      ENGINE.checkKlima(tmp, s);
+      const ev = ENGINE.pickEvent(tmp, rng, s.year, DATA);
+      if (ev) {
+        const fx = ENGINE.resolveEventEffects(ev, tmp, DATA.difficulties[state.difficulty].eventScale);
+        ENGINE.applyDelta(tmp, "wohnen", fx.w);
+        ENGINE.applyDelta(tmp, "gruen", fx.g);
+        ENGINE.applyDelta(tmp, "wirtschaft", fx.wi);
+        ENGINE.applyDelta(tmp, "budget", fx.cost);
+        tmp.eventsLog.push({ id: ev.id });
+      }
+    }
+    state.rng = rng;
+  }
+
   function continueGame() {
     let data;
     try { data = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { return; }
@@ -677,15 +770,82 @@
     state.started = true;
     state.revealed = false;
     state.selected = null;
+    if (!state.choices) state.choices = [];
+    restoreRng();
     showScreen("play");
-    renderScenario();
+    enterMapPhase();
+  }
+
+  const TUTORIAL = [
+    { title: "Das ist deine Karte", text: "Neustadt liegt an der Ostsee: Hafen, Altstadt, Bahnhof und Pelzerhaken. Die Karte verändert sich mit deinen Entscheidungen – du kannst zoomen oder sie vergrößern.", spot: "map" },
+    { title: "Orte und Situationen", text: "Der leuchtende Punkt zeigt, wo es als Nächstes langgeht. Tippe ihn oder die Leiste darunter, um die Situation zu öffnen.", spot: "map" },
+    { title: "Erst wählen, dann sehen", text: "Drei Wege stehen zur Wahl. Was sie bewirken, siehst du erst, nachdem du dich entschieden hast – typisch für echte Zielkonflikte.", spot: "" },
+    { title: "Jahr, Kasse, Werte", text: "Oben bleiben Jahr, Stadtkasse und die drei Werte im Blick. Von 2026 bis 2040 planst du in vier Kapiteln.", spot: "hud" }
+  ];
+
+  function tutorialDone() {
+    try { return localStorage.getItem(TUTORIAL_KEY) === "1"; } catch (e) { return false; }
+  }
+  function markTutorialDone() {
+    try { localStorage.setItem(TUTORIAL_KEY, "1"); } catch (e) {}
+  }
+
+  function startTutorial(done) {
+    let step = 0;
+    const box = $("tutorial");
+    const play = playEl();
+    function render() {
+      const t = TUTORIAL[step];
+      $("tutorial-step").textContent = "Schritt " + (step + 1) + " von " + TUTORIAL.length;
+      $("tutorial-title").textContent = t.title;
+      $("tutorial-text").textContent = t.text;
+      play.classList.toggle("spot-map", t.spot === "map");
+      play.classList.toggle("spot-hud", t.spot === "hud");
+      $("btn-tutorial-next").textContent = step === TUTORIAL.length - 1 ? "Los geht’s" : "Weiter";
+    }
+    function close() {
+      box.hidden = true;
+      play.classList.remove("spot-map", "spot-hud");
+      markTutorialDone();
+      if (done) done();
+    }
+    $("btn-tutorial-next").onclick = function () {
+      if (step >= TUTORIAL.length - 1) close();
+      else { step += 1; render(); }
+    };
+    $("btn-tutorial-skip").onclick = close;
+    box.hidden = false;
+    render();
+  }
+
+  function beginPlay() {
+    const first = function () {
+      const ch = chapterAt(0);
+      if (ch) showChapter(ch, enterMapPhase);
+      else enterMapPhase();
+    };
+    if (!tutorialDone()) startTutorial(first);
+    else first();
   }
 
   function startGame(diff) {
+    const raw = ($("class-code-input") && $("class-code-input").value || "").trim();
+    let seed;
+    if (raw) {
+      seed = ENGINE.decodeClass(raw);
+      if (seed == null) {
+        $("class-code-input").classList.add("is-invalid");
+        $("class-code-hint").textContent = "Dieser Klassencode ist ungültig. Prüfe die Zeichen oder starte ohne Code.";
+        return;
+      }
+      $("class-code-input").classList.remove("is-invalid");
+    } else {
+      seed = ENGINE.newSeed();
+    }
     const cfg = DATA.difficulties[diff] || DATA.difficulties.standard;
     state.difficulty = diff;
     state.current = 0;
-    state.stats = { ...cfg.startStats };
+    state.stats = Object.assign({}, cfg.startStats);
     state.budget = cfg.budget;
     state.flags = { weather: "fair" };
     state.history = [];
@@ -694,9 +854,18 @@
     state.revealed = false;
     state.klima2035 = null;
     state.started = true;
+    state.seed = seed;
+    state.classCode = ENGINE.encodeClass(seed);
+    state.choices = [];
+    state.rng = ENGINE.mulberry32(seed >>> 0);
+    resetCam();
     clearSave();
     showScreen("play");
-    renderScenario();
+    playEl().classList.add("map-focus");
+    playEl().classList.remove("sheet-open", "map-expanded");
+    renderHUD();
+    updateMap();
+    beginPlay();
     AUDIO.year();
   }
 
@@ -755,12 +924,77 @@
     return (el && el.dataset.diff) || "standard";
   }
 
+  function applyTheme(theme) {
+    const t = theme === "dark" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", t);
+    const btn = $("btn-theme");
+    if (btn) {
+      btn.setAttribute("aria-pressed", t === "dark" ? "true" : "false");
+      btn.setAttribute("aria-label", t === "dark" ? "Helles Design" : "Dunkles Design");
+    }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", t === "dark" ? "#0b1c28" : "#0b4a5c");
+    try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+  }
+
+  function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+    if (saved === "dark" || saved === "light") applyTheme(saved);
+    else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) applyTheme("dark");
+    else applyTheme("light");
+  }
+
+  function initMapGestures() {
+    const stage = $("map-stage");
+    if (!stage) return;
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, moved = false;
+    stage.addEventListener("pointerdown", (e) => {
+      if (e.target.closest && e.target.closest(".map-controls")) return;
+      dragging = true;
+      moved = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      ox = mapCam.x;
+      oy = mapCam.y;
+      try { stage.setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+      if (mapCam.scale > 1.02 || moved) {
+        mapCam.x = ox + dx;
+        mapCam.y = oy + dy;
+        applyCam();
+      }
+    });
+    const end = () => { dragging = false; };
+    stage.addEventListener("pointerup", end);
+    stage.addEventListener("pointercancel", end);
+    stage.addEventListener("click", (e) => {
+      if (moved) { e.stopPropagation(); moved = false; }
+    }, true);
+    stage.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const next = clamp(mapCam.scale + (e.deltaY < 0 ? 0.15 : -0.15), 1, 2.6);
+      mapCam.scale = next;
+      if (next === 1) { mapCam.x = 0; mapCam.y = 0; }
+      applyCam();
+    }, { passive: false });
+  }
+
   function init() {
     AUDIO.load();
+    initTheme();
     const soundBtn = $("btn-sound");
     const syncSound = () => {
       soundBtn.setAttribute("aria-pressed", AUDIO.isOn() ? "true" : "false");
-      soundBtn.textContent = AUDIO.isOn() ? "Ton an" : "Ton aus";
+      const label = AUDIO.isOn() ? "Ton an" : "Ton aus";
+      soundBtn.setAttribute("aria-label", label);
+      const s = soundBtn.querySelector(".visually-hidden");
+      if (s) s.textContent = label;
     };
     syncSound();
     soundBtn.addEventListener("click", () => {
@@ -768,8 +1002,13 @@
       syncSound();
       if (AUDIO.isOn()) AUDIO.tap();
     });
+    $("btn-theme").addEventListener("click", () => {
+      const now = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(now);
+    });
 
     initDifficulty();
+    initMapGestures();
     $("btn-start").addEventListener("click", () => startGame(selectedDifficulty()));
     $("btn-continue").hidden = !hasSave();
     $("btn-continue").addEventListener("click", continueGame);
@@ -782,13 +1021,57 @@
     $("glossary").addEventListener("click", (e) => {
       if (e.target.id === "glossary") $("glossary").hidden = true;
     });
+    $("btn-peek").addEventListener("click", () => { AUDIO.tap(); openSheet(); });
+    $("btn-map-expand").addEventListener("click", () => toggleExpand());
+    $("btn-map-in").addEventListener("click", () => {
+      mapCam.scale = clamp(mapCam.scale + 0.25, 1, 2.6);
+      applyCam();
+    });
+    $("btn-map-out").addEventListener("click", () => {
+      mapCam.scale = clamp(mapCam.scale - 0.25, 1, 2.6);
+      if (mapCam.scale === 1) { mapCam.x = 0; mapCam.y = 0; }
+      applyCam();
+    });
+    $("btn-copy-code").addEventListener("click", async () => {
+      const code = $("result-code").textContent;
+      try {
+        if (navigator.clipboard) await navigator.clipboard.writeText(code);
+        $("btn-copy-code").textContent = "Kopiert";
+        setTimeout(() => { $("btn-copy-code").textContent = "Code kopieren"; }, 1600);
+      } catch (e) {
+        $("btn-copy-code").textContent = "Bitte markieren und kopieren";
+      }
+    });
+    $("btn-export-png").addEventListener("click", async () => {
+      const canvas = StadtExport.draw({
+        score: computeScore(state.stats, state.budget),
+        band: bandFor(computeScore(state.stats, state.budget)),
+        title: $("result-kicker").textContent,
+        text: $("result-text").textContent,
+        stats: state.stats,
+        budget: state.budget,
+        choices: state.history,
+        code: $("result-code").textContent
+      });
+      try { await StadtExport.downloadCanvas(canvas, "stadtspiel-neustadt-2040.png"); }
+      catch (e) { $("btn-export-png").textContent = "Speichern nicht möglich"; }
+    });
 
-    document.querySelectorAll(".map-pin").forEach((pin) => {
-      pin.addEventListener("click", () => {
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && playEl().classList.contains("map-expanded")) toggleExpand(false);
+    });
+
+    document.querySelectorAll("#stadt-map .map-pin").forEach((pin) => {
+      const go = () => {
         const s = currentScenario();
         if (!state.started || !s || pin.getAttribute("data-place") !== s.place) return;
-        $("sheet").classList.add("is-open");
+        if (playEl().classList.contains("map-expanded")) toggleExpand(false);
+        openSheet();
         AUDIO.tap();
+      };
+      pin.addEventListener("click", go);
+      pin.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); }
       });
     });
 
