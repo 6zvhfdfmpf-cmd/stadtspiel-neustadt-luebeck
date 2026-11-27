@@ -1,55 +1,59 @@
-# StadtSpiel – Stadtplanung in Neustadt in Holstein
+# StadtSpiel – Wettbewerb zur Stadtplanung in Neustadt in Holstein
 
-**Prototyp für Schulen**  
-Stadtplanung spielerisch begreifen am Beispiel von **Neustadt in Holstein**.
+**Für die Klassen 8 bis 10**  
+Wer plant Neustadt in Holstein am besten? Die Schüler:innen werden zu Stadtplaner:innen, sammeln Punkte für eine ausgewogene Stadt – und die Besten kommen eine Runde weiter.
 
 ## Idee
 
-Neustadt in Holstein liegt an der Lübecker Bucht: rund 16.000 Einwohner, historische Altstadt, Hafen und Ostsee. In diesem Serious Game werden Schüler:innen zu Stadtplaner:innen. Zwischen **2026 und 2040** treffen sie an echten Orten der Stadt Entscheidungen zu Wohnraum, Klima, Verkehr, Tourismus und Denkmalschutz – und sehen, wie sich die Karte, die Stadtkasse und das Leben vor Ort verändern.
+Neustadt in Holstein liegt an der Lübecker Bucht: rund 16.000 Einwohner, historische Altstadt, Hafen und Ostsee. In 13 Situationen von 2026 bis 2040 entscheidest du über Wohnraum, Klima, Verkehr, Tourismus und Denkmalschutz. Die Karte, die Stadtkasse und das Leben vor Ort verändern sich.
 
-Die Situationen sind an reale Themen angelehnt (unter anderem Hafenwestseite, Wärmeplanung, Gestaltungssatzung, Ferienwohnungen, Hochwasserschutz und den Uferweg nach Pelzerhaken). Die Inhalte sind vereinfacht und für den Unterricht aufbereitet; sie ersetzen keine amtliche Planung.
+Die Inhalte sind an echte Themen angelehnt (unter anderem Hafenwestseite, Wärmeplanung, Gestaltungssatzung, Ferienwohnungen, Hochwasserschutz). Sie sind vereinfacht und ersetzen keine amtliche Planung.
 
-## Spielen
+## Spielen (am Computer)
 
-Öffne **[index.html](index.html)** im Browser. Das Spiel ist eine statische Website und läuft auf dem Handy.
+Öffne **[index.html](index.html)** im Browser, am besten auf einem Laptop oder PC. Maus und Tastatur: Tasten **1, 2 oder 3** wählen eine Option, **Enter** bestätigt.
 
-Zusätzlich gibt es eine Seite für den Unterricht: **[lehrkraefte.html](lehrkraefte.html)**.
+Für eine gewertete Runde brauchst du:
 
-## Was du im Spiel tust
+1. Deinen Namen und deine Klasse (z. B. 8a oder 10b)
+2. Den **Rundencode** von der Lehrkraft (damit alle dieselben Ereignisse erleben)
+3. Einen Durchlauf – auf demselben Rechner zählt nur der erste Versuch
 
-1. Wähle eine Schwierigkeit (optional einen Klassencode eingeben) und schau dir die stilisierte Karte an
-2. Ein kurzes Tutorial erklärt Karte, Orte und Werte
-3. Spiele 13 Situationen in vier Kapiteln von 2026 bis 2038 – die Karte nimmt den Bildschirm ein und lässt sich vergrößern, zoomen und verschieben
-4. Sieh, wie Gebäude, Bäume, Wege, Schiffe oder Schutzanlagen erscheinen
-5. Reagiere auf Ereignisse wie Sturmflut, Hitzesommer oder Fördergeld
-6. Höre unterschiedliche Stimmen aus der Stadt und achte auf die Kasse
-7. Erhalte 2040 eine Auswertung mit Zeitraffer der Karte, Zielkonflikten, Auszeichnungen, Reflexionsfragen, QR-Code und einem Bild zum Speichern
+Am Ende bekommst du einen **Wertungs-Code** (mit QR-Code) für die Lehrkraft.
 
-Der Spielstand wird automatisch im Browser gespeichert. Ton ist standardmäßig aus. Es gibt einen Dunkelmodus.
+Ohne Rundencode ist das Spiel eine Übung und zählt nicht.
 
-## Klassenmodus
+## So entstehen die Punkte (0–100)
 
-Lehrkräfte erzeugen auf der [Lehrkräfte-Seite](lehrkraefte.html) einen kurzen **Klassencode**. Alle Schüler:innen geben denselben Code beim Start ein und erleben dieselben Zufallsereignisse.
+1. **Grundwert:** Durchschnitt aus Wohnen, Grün & Klima und Wirtschaft
+2. **Abzug für Ungleichgewicht:** Wenn bester und schwächster Wert mehr als 20 Punkte auseinanderliegen: (Abstand − 20) × 0,45
+3. **Abzug für Krise:** Jeder Bereich unter 35 kostet extra Punkte, unter 20 noch einmal
+4. **Kasse:** Abzug bei Schulden (höchstens 18), kleiner Bonus bei einem Polster (höchstens 8)
 
-Am Ende entsteht ein **Ergebniscode** (und ein QR-Code, lokal im Browser). Den Code kann die Lehrkraft auf derselben Seite einfügen: Die Klasse wird verglichen, ohne dass Daten an einen Server gehen.
+Die genaue Rechnung steht am Ende jeder Runde. Eine einseitige Stadt kann hinter einer ausgewogeneren landen. Die Auswertungsseite berechnet die Punkte aus dem Spielverlauf neu; eine geänderte Zahl im Code wird erkannt.
 
-## Für Schulen
+## Auswertung für Lehrkräfte
 
-- Open Source (MIT)
-- Drei Schwierigkeitsgrade, Lexikon, Reflexionsfragen, Hinweise für Lehrkräfte
-- Klassenvergleich, Ergebnisbild (PNG) und Druckansicht
-- Anpassbar (Szenarien und Ereignisse in `js/data.js`)
-- Gut geeignet für Politik, Geografie, Wirtschaft oder Projektwochen
+Auf **[lehrkraefte.html](lehrkraefte.html)**:
+
+1. Rundencode erzeugen und an die Klasse geben
+2. Wertungs-Codes einsammeln (einfügen oder CSV/Textdatei laden)
+3. Rangliste insgesamt und pro Klasse sehen
+4. Die ersten *N* Plätze (einstellbar) werden mit „kommt eine Runde weiter“ markiert – wahlweise je Klasse oder in der Gesamtrangliste
+5. Bei Punktgleichheit zählt zuerst der geringere Abstand der drei Werte, dann die höhere Kasse; unentschiedene Plätze kommen gemeinsam weiter, wenn der Platz in der Grenze liegt
+6. Rangliste als CSV speichern oder drucken
+
+Es gibt keinen Server. Codes und Rangliste bleiben im Browser.
 
 ## Technik
 
-- Reines HTML, CSS und JavaScript (kein Framework)
-- Mobil zuerst gestaltet
-- Keine API-Schlüssel, keine externen Kartendienste, kein Server für Codes oder Export
-- Optional als PWA speicherbar, mit Service Worker für Offline-Dateien
-- Schriftarten laden bei vorhandener Verbindung nach, Systemschriften greifen als Fallback
+- Reines HTML, CSS und JavaScript, für Computer und Laptops gestaltet (Handy bleibt bedienbar)
+- Keine API-Schlüssel, keine externen Dienste
+- Optional als PWA speicherbar
+- Schriftarten laden bei Verbindung nach, Systemschriften greifen als Fallback
+- Open Source (MIT), anpassbar in `js/data.js`
 
 ---
 
-**Zielgruppe:** Schulleitung, Lehrkräfte und Schüler:innen  
-**Status:** Erweiterter Prototyp, Schwerpunkt Neustadt in Holstein, Zeitraum 2026–2040
+**Zielgruppe:** Lehrkräfte und Schüler:innen der Klassen 8 bis 10  
+**Status:** Wettbewerbsprototyp, Schwerpunkt Neustadt in Holstein, Zeitraum 2026–2040

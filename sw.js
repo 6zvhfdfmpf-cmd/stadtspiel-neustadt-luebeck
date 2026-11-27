@@ -1,4 +1,4 @@
-const CACHE = "stadtspiel-v3";
+const CACHE = "stadtspiel-v4";
 const ASSETS = [
   "./",
   "./index.html",

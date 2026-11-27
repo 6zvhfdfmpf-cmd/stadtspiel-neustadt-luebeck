@@ -51,7 +51,13 @@ window.StadtExport = (function () {
 
     ctx.font = "700 52px Fraunces, Georgia, serif";
     ctx.fillStyle = "#142228";
-    ctx.fillText("Deine Stadtplanung · 2040", w / 2, 210);
+    ctx.fillText("Dein Ergebnis · 2040", w / 2, 210);
+    if (opts.name || opts.klasse) {
+      ctx.font = "700 28px 'Nunito Sans', sans-serif";
+      ctx.fillStyle = "#0b4a5c";
+      const who = [opts.name, opts.klasse ? ("Klasse " + opts.klasse) : ""].filter(Boolean).join("  ·  ");
+      ctx.fillText(who, w / 2, 250);
+    }
 
     const score = opts.score || 0;
     ctx.beginPath();

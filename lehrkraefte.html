@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b4a5c">
-  <title>StadtSpiel – Hinweise für Lehrkräfte</title>
+  <title>StadtSpiel – Wettbewerbsauswertung</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,44 +24,99 @@
         </svg>
         <div>
           <strong>StadtSpiel</strong>
-          <span>Für Lehrkräfte</span>
+          <span>Wettbewerbsauswertung</span>
         </div>
       </div>
     </header>
     <main>
       <div class="card">
-        <p class="kicker">Unterrichtsmaterial</p>
-        <h1>Stadtplanung in Neustadt in Holstein</h1>
-        <p class="lead">Ein Serious Game für Politik, Geografie, Wirtschaft oder Projektwochen. Die Inhalte sind vereinfacht und ersetzen keine amtliche Planung.</p>
+        <p class="kicker">Klassen 8 bis 10</p>
+        <h1>Wettbewerb: Wer plant Neustadt am besten?</h1>
+        <p class="lead">Die Schüler:innen spielen am Computer eine gemeinsame Runde. Wer die Stadt am ausgewogensten plant, bekommt die meisten Punkte und kommt eine Runde weiter. Alles bleibt auf diesem Gerät – ohne Server.</p>
         <p><a href="index.html">Zum Spiel</a></p>
       </div>
 
       <div class="card" id="klassenmodus">
-        <h2>Klassenmodus</h2>
-        <p class="body-text">Erzeuge einen kurzen Code und gib ihn der Klasse. Wer denselben Code eingibt, erlebt dieselben Zufallsereignisse. Am Ende fügst du die Ergebniscodes (oder QR-Inhalte) hier ein – der Vergleich bleibt auf diesem Gerät, ohne Server.</p>
+        <h2>Eine Runde durchführen</h2>
+        <ol>
+          <li>Erzeuge einen Rundencode und schreibe ihn an die Tafel. Alle geben denselben Code ein – dann sind die Ereignisse für alle gleich und die Punkte vergleichbar.</li>
+          <li>Die Klasse spielt am PC (nicht schwerpunktmäßig am Handy). Name und Klasse eintragen, Stufe ist fest auf „Standard“.</li>
+          <li>Jede Person spielt die Runde auf einem Rechner nur einmal. Am Ende entsteht ein Wertungs-Code mit Prüfziffer.</li>
+          <li>Codes hier einfügen (eine Zeile je Person oder als CSV-Datei). Die Seite berechnet die Punkte neu und erstellt die Rangliste.</li>
+        </ol>
         <div class="actions">
-          <button class="btn btn-gold" type="button" id="btn-make-code">Klassencode erzeugen</button>
+          <button class="btn btn-gold" type="button" id="btn-make-code">Rundencode erzeugen</button>
         </div>
         <p class="code-preview" id="class-code-out">–</p>
         <div class="qr-wrap" id="class-qr" hidden></div>
-        <p class="hint" id="class-code-help">Der Code gilt für eine gemeinsame Runde. Schwierigkeit wählen die Schüler:innen selbst.</p>
+        <p class="hint" id="class-code-help">Diesen Code bekommen alle Teilnehmenden. Ohne diesen Code zählt ein Spiel nur als Übung.</p>
+      </div>
 
-        <label class="class-field" for="result-paste">Ergebniscodes der Klasse</label>
-        <textarea class="code-input" id="result-paste" placeholder="Einen Code je Zeile, z. B.&#10;R-AB3DQ-GHJKM2N" spellcheck="false"></textarea>
+      <div class="card">
+        <h2>Codes einlesen und werten</h2>
+        <div class="round-tools">
+          <div>
+            <label class="class-field" for="round-filter">Rundencode dieser Wertung (optional)</label>
+            <input class="code-input" id="round-filter" maxlength="10" placeholder="K-AB3DQ" autocomplete="off" spellcheck="false">
+            <p class="hint">Wenn du ihn einträgst, werden Codes aus einer anderen Runde gekennzeichnet.</p>
+          </div>
+          <div>
+            <label class="class-field" for="top-n">Weiter kommen die ersten …</label>
+            <input class="code-input name-input" id="top-n" type="number" min="1" max="50" value="3">
+          </div>
+        </div>
+        <label class="class-field" for="advance-mode">Wer kommt weiter?</label>
+        <select class="code-input name-input" id="advance-mode">
+          <option value="class" selected>Die ersten Plätze in jeder Klasse</option>
+          <option value="overall">Die ersten Plätze in der Gesamtrangliste</option>
+        </select>
+        <label class="class-field" for="result-paste">Wertungs-Codes (eine Zeile je Person, auch CSV)</label>
+        <textarea class="code-input" id="result-paste" placeholder="W/LEA-MUELLER/8A/R-AB3DQ-GHJKM2N/081/1/AM" spellcheck="false"></textarea>
         <div class="actions">
-          <button class="btn" type="button" id="btn-compare">Klasse vergleichen</button>
+          <button class="btn" type="button" id="btn-compare">Rangliste erstellen</button>
+          <label class="btn btn-ghost file-btn">CSV oder Textdatei laden
+            <input type="file" id="file-import" accept=".csv,.txt,text/plain,text/csv" hidden>
+          </label>
+          <button class="btn btn-ghost" type="button" id="btn-export-csv" hidden>Rangliste als CSV speichern</button>
+          <button class="btn btn-ghost" type="button" id="btn-print">Rangliste drucken</button>
         </div>
         <p class="class-error" id="class-error" hidden></p>
         <div id="class-summary" hidden>
           <p class="lead" id="class-count"></p>
-          <svg class="chart" id="class-chart" viewBox="0 0 360 160" role="img" aria-label="Durchschnittswerte der Klasse"></svg>
-          <table class="class-table">
+          <svg class="chart" id="class-chart" viewBox="0 0 360 160" role="img" aria-label="Durchschnittswerte"></svg>
+          <h3 class="section-title">Gesamtrangliste</h3>
+          <p class="hint" id="tie-hint">Du entscheidest, ob die ersten Plätze je Klasse oder in der Gesamtrangliste weiterkommen. Bei gleicher Punktzahl zählt zuerst der geringere Abstand zwischen den drei Werten, dann die höhere Kasse. Bleibt es unentschieden, teilen sie den Platz und kommen gemeinsam weiter, wenn dieser Platz noch in der Grenze liegt.</p>
+          <table class="rank-table" id="rank-overall">
             <thead>
-              <tr><th>Code</th><th>Punkte</th><th>Wohnen</th><th>Grün</th><th>Wirtschaft</th><th>Kasse</th></tr>
+              <tr><th>Platz</th><th>Name</th><th>Klasse</th><th>Punkte</th><th>Wohnen</th><th>Grün</th><th>Wirtschaft</th><th>Kasse</th><th>Versuch</th><th></th></tr>
             </thead>
-            <tbody id="class-rows"></tbody>
+            <tbody></tbody>
           </table>
+          <div id="rank-by-class"></div>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>So entstehen die Punkte</h2>
+        <p class="body-text">Alle sehen dieselbe Rechnung. Die Auswertungsseite spielt die Entscheidungen unsichtbar nach und setzt die offizielle Punktzahl – nicht die Zahl, die jemand in den Code geschrieben haben könnte.</p>
+        <ol>
+          <li><strong>Grundwert:</strong> Durchschnitt aus Wohnen, Grün &amp; Klima und Wirtschaft.</li>
+          <li><strong>Abzug für Ungleichgewicht:</strong> (Abstand zwischen bestem und schwächstem Wert − 20) × 0,45, aber nur wenn der Abstand über 20 liegt.</li>
+          <li><strong>Abzug für Krise:</strong> Jeder Bereich unter 35: (35 − Wert) × 0,65. Zusätzlich unter 20: (20 − Wert) × 0,5.</li>
+          <li><strong>Kasse:</strong> Bei Schulden Abzug bis höchstens 18 Punkte (|Kasse| × 0,3). Bei einem Polster Bonus bis höchstens 8 Punkte (Kasse × 0,08).</li>
+        </ol>
+        <p class="body-text">Das Ergebnis wird auf eine ganze Zahl zwischen 0 und 100 gerundet. Eine einseitige Stadt kann also hinter einer etwas schwächeren, aber ausgewogenen Stadt landen.</p>
+      </div>
+
+      <div class="card">
+        <h2>Hinweise zur Fairness</h2>
+        <ul>
+          <li>Der Wertungs-Code trägt Name, Klasse, Spielverlauf, Punkte und eine Prüfziffer. Vertipper oder nachträgliche Änderungen werden erkannt.</li>
+          <li>Auf demselben Rechner ist ein zweiter Durchlauf mit gleichem Namen, gleicher Klasse und gleichem Rundencode gesperrt. Die Sperre gilt nur auf diesem Gerät.</li>
+          <li>Steht im Code „Versuch 2 oder höher“, sollte die Person in der Regel nicht gewertet oder zumindest geprüft werden.</li>
+          <li>Zwei Codes derselben Person: den ersten abgegebenen bzw. Versuch 1 verwenden.</li>
+          <li>Das Spiel ist für den Unterricht in den Klassen 8 bis 10 gedacht und für Computer und Laptops gestaltet (Tasten 1–3 und Enter).</li>
+        </ul>
       </div>
 
       <div class="card">
@@ -69,44 +124,26 @@
         <ul>
           <li>Zielkonflikte der Stadtplanung erkennen (Wohnen, Klima, Wirtschaft, Haushalt).</li>
           <li>Lokale Themen von Neustadt in Holstein einordnen, etwa Hafenwestseite, Wärmeplanung, Gestaltungssatzung, Ferienwohnungen und Hochwasserschutz.</li>
-          <li>Interessen unterschiedlicher Gruppen abwägen (z. B. Jugendliche, Betriebe, ältere Einwohner).</li>
-          <li>Fachbegriffe wie Gestaltungssatzung, Wärmenetz, Bebauungsplan und Nachverdichtung erläutern können.</li>
-          <li>Eigene Entscheidungen begründen und in der Auswertung reflektieren.</li>
+          <li>Interessen unterschiedlicher Gruppen abwägen und Entscheidungen begründen.</li>
         </ul>
-      </div>
-      <div class="card">
         <h2>Ablauf (45 Minuten)</h2>
         <ol>
-          <li>Einstieg (5 Min.): Lage von Neustadt, Karte betrachten, Frage: „Was braucht eine Stadt am Meer?“</li>
-          <li>Spielen (25 Min.): Schwierigkeit „Standard“, einzeln oder zu zweit. Optional denselben Klassencode verteilen. Spielstand wird automatisch gespeichert.</li>
-          <li>Auswertung (15 Min.): Note, Zielkonflikte, Ergebniscodes vergleichen und die drei Reflexionsfragen. Optional Bild speichern oder Zusammenfassung drucken.</li>
+          <li>Einstieg (5 Min.): Lage von Neustadt, Frage: „Was braucht eine Stadt am Meer?“</li>
+          <li>Spielen (25 Min.): Rundencode, Name und Klasse, Durchlauf auf „Standard“.</li>
+          <li>Auswertung (15 Min.): Codes einsammeln, Rangliste zeigen, wer kommt weiter? Kurz die Punkteformel und einen Zielkonflikt besprechen.</li>
         </ol>
         <h2>Ablauf (90 Minuten)</h2>
         <ol>
           <li>Längerer Einstieg mit zwei, drei Begriffen aus dem Lexikon.</li>
-          <li>Ein Durchlauf, danach zweiter Durchlauf mit anderer Schwierigkeit oder bewusster Gegenstrategie.</li>
-          <li>Vergleich der Endkarten und Codes: Wer hat das Klimaziel 2035 im Blick behalten? Wer die Kasse? Wer das Wohnen?</li>
-          <li>Diskussion: Welche Entscheidung wäre in der realen Stadt besonders umstritten?</li>
+          <li>Wettbewerbsrunde, danach Auswertung und Gespräch: Wer hat das Klimaziel, die Kasse oder das Wohnen im Blick behalten?</li>
+          <li>Optional eine Übungsrunde ohne Wertung, mit bewusster Gegenstrategie.</li>
         </ol>
-      </div>
-      <div class="card">
-        <h2>Hinweise zur Auswertung</h2>
-        <ul>
-          <li>Die Endnote ist nicht nur der Durchschnitt: Ungleichgewicht und sehr niedrige Einzelwerte senken das Ergebnis. Eine einseitige Stadt kann also schlechter abschneiden als eine ausgewogene.</li>
-          <li>Ereignisse (z. B. Sturmflut, Hitzesommer, Fördergeld) hängen von früheren Entscheidungen und – im Klassenmodus – vom gemeinsamen Code ab.</li>
-          <li>Es gibt kein einzig richtiges Spiel. Unterschiedliche Wege sollen im Unterricht sichtbar werden.</li>
-          <li>Personenstimmen sind typisierte Perspektiven, keine echten Zitate.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h2>Technik</h2>
-        <p class="body-text">Das Spiel läuft als statische Website im Browser, auch auf dem Handy. Ein Internetanschluss ist nur für die Schriftarten nötig, die Darstellung funktioniert auch ohne. Der Spielstand liegt lokal im Browser (localStorage). Klassencodes, QR-Codes und das Ergebnisbild entstehen ebenfalls nur auf dem Gerät. Optional kann die Seite als PWA gespeichert werden.</p>
-        <p class="footnote">Stand der inhaltlichen Grundlage: 2026. Quellenanregung: Angaben der Stadt Neustadt in Holstein, Landesinformationen zur Hafenwestseite und zur Wärmeplanung. Immer vereinfacht für den Unterricht.</p>
+        <p class="footnote">Stand der inhaltlichen Grundlage: 2026. Die Inhalte sind vereinfacht und ersetzen keine amtliche Planung der Stadt Neustadt in Holstein.</p>
         <p><a href="index.html">Zurück zum Spiel</a></p>
       </div>
     </main>
     <footer class="site-footer">
-      Open-Source-Prototyp · <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
+      Wettbewerb für die Klassen 8 bis 10 · <a href="https://github.com/6zvhfdfmpf-cmd/stadtspiel-neustadt-luebeck">GitHub</a>
     </footer>
   </div>
   <script src="js/data.js"></script>
@@ -115,44 +152,71 @@
   <script>
     (function () {
       const $ = (id) => document.getElementById(id);
+      let lastRows = [];
+
       $("btn-make-code").addEventListener("click", function () {
         const seed = StadtEngine.newSeed();
         const code = StadtEngine.encodeClass(seed);
         $("class-code-out").textContent = code;
         $("class-qr").hidden = false;
         $("class-qr").innerHTML = StadtQR.toSvg(code, { fg: "#062a38", bg: "#fff6ea" });
+        $("round-filter").value = code;
       });
-      $("btn-compare").addEventListener("click", function () {
-        const raw = $("result-paste").value.split(/[\s,;]+/).map((s) => s.trim()).filter(Boolean);
-        const err = $("class-error");
-        const box = $("class-summary");
-        const rows = $("class-rows");
-        rows.innerHTML = "";
-        if (!raw.length) {
-          err.hidden = false;
-          err.textContent = "Füge mindestens einen Ergebniscode ein.";
-          box.hidden = true;
-          return;
+
+      function extractCodes(text) {
+        const found = [];
+        const re = /W\/[A-Z0-9\-]+\/[A-Z0-9]+\/R-[A-Z0-9\-]+\/\d{1,3}\/\d\/[A-Z0-9]+|R-[A-Z0-9]{4,}-[A-Z0-9]{4,}/gi;
+        let m;
+        const src = String(text || "");
+        while ((m = re.exec(src))) found.push(m[0]);
+        if (!found.length) {
+          src.split(/[\n;,]+/).forEach((line) => {
+            const t = line.trim();
+            if (/^W\//i.test(t) || /^R-/i.test(t)) found.push(t.split(",")[0].trim());
+          });
         }
-        const ok = [];
-        const bad = [];
-        raw.forEach((code) => {
-          const d = StadtEngine.decodeResult(code);
-          if (!d) { bad.push(code); return; }
-          const sim = StadtEngine.simulate(STADTSPIEL, d.seed, d.difficulty, d.choices);
-          ok.push({ code: code.toUpperCase(), difficulty: d.difficulty, sim: sim });
+        return found;
+      }
+
+      function expectedSeed() {
+        const raw = ($("round-filter").value || "").trim();
+        if (!raw) return null;
+        return StadtEngine.decodeClass(raw);
+      }
+
+      function topN() {
+        const n = parseInt($("top-n").value, 10);
+        return isFinite(n) && n > 0 ? n : 3;
+      }
+
+      function fillTable(table, rows) {
+        const tb = table.tBodies[0] || table.appendChild(document.createElement("tbody"));
+        tb.innerHTML = "";
+        rows.forEach((r) => {
+          const tr = document.createElement("tr");
+          if (r.advances) tr.className = "is-advance";
+          const cells = [
+            r.rank, r.name || "–", r.klasse || "–", r.score,
+            r.stats.wohnen, r.stats.gruen, r.stats.wirtschaft, r.budget,
+            r.attempt || 1, r.advances ? "kommt eine Runde weiter" : ""
+          ];
+          cells.forEach((v, i) => {
+            const td = document.createElement("td");
+            if (i === 9 && r.advances) {
+              const span = document.createElement("span");
+              span.className = "tag-advance";
+              span.textContent = v;
+              td.appendChild(span);
+            } else td.textContent = v;
+            tr.appendChild(td);
+          });
+          tb.appendChild(tr);
         });
-        if (bad.length) {
-          err.hidden = false;
-          err.textContent = "Ungültig: " + bad.join(", ");
-        } else err.hidden = true;
-        if (!ok.length) { box.hidden = true; return; }
-        box.hidden = false;
-        const avg = (key) => Math.round(ok.reduce((a, r) => a + r.sim.stats[key], 0) / ok.length);
-        const avgScore = Math.round(ok.reduce((a, r) => a + r.sim.score, 0) / ok.length);
-        const avgBudget = Math.round(ok.reduce((a, r) => a + r.sim.budget, 0) / ok.length);
-        $("class-count").textContent = ok.length + " Auswertung" + (ok.length === 1 ? "" : "en") +
-          " · Schnitt " + avgScore + " Punkte · Kasse " + avgBudget;
+      }
+
+      function drawChart(ok) {
+        const avg = (key) => Math.round(ok.reduce((a, r) => a + r.stats[key], 0) / ok.length);
+        const avgScore = Math.round(ok.reduce((a, r) => a + r.score, 0) / ok.length);
         const bars = [
           { label: "Wohnen", v: avg("wohnen"), color: "#c46a3a" },
           { label: "Grün & Klima", v: avg("gruen"), color: "#2a6b4d" },
@@ -171,17 +235,133 @@
             '<text x="338" y="' + (y + 13) + '" font-size="12" text-anchor="end" fill="#142228" font-weight="700">' + b.v + "</text>"
           );
         });
-        ok.sort((a, b) => b.sim.score - a.sim.score);
-        ok.forEach((r) => {
-          const tr = document.createElement("tr");
-          [r.code, r.sim.score, r.sim.stats.wohnen, r.sim.stats.gruen, r.sim.stats.wirtschaft, r.sim.budget].forEach((v) => {
-            const td = document.createElement("td");
-            td.textContent = v;
-            tr.appendChild(td);
-          });
-          rows.appendChild(tr);
+      }
+
+      function runCompare() {
+        const codes = extractCodes($("result-paste").value);
+        const err = $("class-error");
+        const box = $("class-summary");
+        if (!codes.length) {
+          err.hidden = false;
+          err.textContent = "Füge mindestens einen Wertungs-Code ein.";
+          box.hidden = true;
+          return;
+        }
+        const want = expectedSeed();
+        const ok = [];
+        const bad = [];
+        const flags = [];
+        codes.forEach((code) => {
+          const v = StadtEngine.verifyTicket(STADTSPIEL, code);
+          if (!v || v.error) {
+            bad.push(code + (v && v.error === "checksum" ? " (Prüfziffer)" : v && v.error === "score" ? " (Punkte verändert)" : " (ungültig)"));
+            return;
+          }
+          const row = {
+            name: v.dec.name || "",
+            klasse: v.dec.klasse || "",
+            score: v.officialScore,
+            spread: v.parts.spread,
+            budget: v.sim.budget,
+            stats: v.sim.stats,
+            attempt: v.dec.attempt || 1,
+            official: !!v.dec.official,
+            seed: v.dec.game.seed,
+            difficulty: v.dec.game.difficulty,
+            ticket: v.dec.ticket
+          };
+          if (want != null && row.seed !== want) flags.push((row.name || code) + " (andere Runde)");
+          if (row.difficulty !== "standard") flags.push((row.name || code) + " (nicht Standard)");
+          if (row.attempt > 1) flags.push((row.name || code) + " (Versuch " + row.attempt + ")");
+          if (!row.official) flags.push((row.name || code) + " (alter oder unvollständiger Code)");
+          ok.push(row);
         });
+        const messages = [];
+        if (bad.length) messages.push("Ungültig: " + bad.join(", "));
+        if (flags.length) messages.push("Bitte prüfen: " + flags.join(", "));
+        if (messages.length) { err.hidden = false; err.textContent = messages.join(" "); }
+        else err.hidden = true;
+        if (!ok.length) { box.hidden = true; return; }
+        box.hidden = false;
+        const mode = ($("advance-mode") && $("advance-mode").value) || "class";
+        const n = topN();
+        const overall = StadtEngine.rankEntries(ok, n);
+        const by = {};
+        overall.forEach((r) => {
+          const k = r.klasse || "ohne Klasse";
+          (by[k] || (by[k] = [])).push({
+            name: r.name, klasse: r.klasse, score: r.score, spread: r.spread,
+            budget: r.budget, stats: r.stats, attempt: r.attempt, ticket: r.ticket
+          });
+        });
+        const classRanked = {};
+        Object.keys(by).forEach((k) => { classRanked[k] = StadtEngine.rankEntries(by[k], n); });
+        if (mode === "class") {
+          const adv = {};
+          Object.keys(classRanked).forEach((k) => {
+            classRanked[k].forEach((r) => { if (r.advances) adv[r.ticket || (r.name + k)] = true; });
+          });
+          overall.forEach((r) => { r.advances = !!adv[r.ticket || (r.name + r.klasse)]; });
+        }
+        lastRows = overall;
+        $("class-count").textContent = overall.length + " gültige Auswertung" + (overall.length === 1 ? "" : "en") +
+          " · " + overall.filter((r) => r.advances).length + " kommen eine Runde weiter (" +
+          (mode === "class" ? "je Klasse" : "Gesamtrangliste") + ")";
+        drawChart(overall);
+        fillTable($("rank-overall"), overall);
+        const wrap = $("rank-by-class");
+        wrap.innerHTML = "";
+        Object.keys(classRanked).sort().forEach((k) => {
+          const list = classRanked[k];
+          if (mode === "overall") {
+            const flags = {};
+            overall.forEach((r) => { flags[r.ticket || (r.name + r.klasse)] = r.advances; });
+            list.forEach((r) => { r.advances = !!flags[r.ticket || (r.name + r.klasse)]; });
+          }
+          const h = document.createElement("h3");
+          h.className = "section-title";
+          h.textContent = "Klasse " + k;
+          wrap.appendChild(h);
+          const table = $("rank-overall").cloneNode(true);
+          table.id = "";
+          fillTable(table, list);
+          wrap.appendChild(table);
+        });
+        $("btn-export-csv").hidden = false;
+      }
+
+      $("btn-compare").addEventListener("click", runCompare);
+      $("file-import").addEventListener("change", function (e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function () {
+          $("result-paste").value = String(reader.result || "");
+          runCompare();
+        };
+        reader.readAsText(file);
       });
+      $("btn-export-csv").addEventListener("click", function () {
+        if (!lastRows.length) return;
+        const head = ["Platz","Name","Klasse","Punkte","Wohnen","Gruen","Wirtschaft","Kasse","Abstand","Versuch","Weiter","Code"];
+        const lines = [head.join(";")];
+        lastRows.forEach((r) => {
+          lines.push([
+            r.rank, r.name, r.klasse, r.score,
+            r.stats.wohnen, r.stats.gruen, r.stats.wirtschaft, r.budget,
+            Math.round(r.spread), r.attempt, r.advances ? "ja" : "nein",
+            r.ticket
+          ].join(";"));
+        });
+        const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "stadtspiel-rangliste.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      });
+      $("btn-print").addEventListener("click", function () { window.print(); });
     })();
   </script>
 </body>
